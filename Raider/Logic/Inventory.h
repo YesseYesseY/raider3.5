@@ -268,7 +268,12 @@ namespace Inventory
                 {
                     Weapon->bReplicates = true;
                     Weapon->bOnlyRelevantToOwner = false;
-
+                    
+                    // TODO: Fix context traps
+                    if (Definition->IsA(UFortContextTrapItemDefinition::StaticClass()))
+                    {
+                        static_cast<AFortDecoTool_ContextTrap*>(Weapon)->ContextTrapItemDefinition = (UFortContextTrapItemDefinition*)Definition;
+                    }
                     static_cast<AFortTrapTool*>(Weapon)->ItemDefinition = Definition;
                 }
             }
@@ -569,8 +574,9 @@ namespace Inventory
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_RoofS.BuildingItemData_RoofS"),
 
             UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Launch_Pad_Athena.TID_Floor_Player_Launch_Pad_Athena"),
-            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Wall_Electric_Athena_R_T03.TID_Wall_Electric_Athena_R_T03"),
-            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Spikes_Athena_R_T03.TID_Floor_Spikes_Athena_R_T03"),
+            /*UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Wall_Electric_Athena_R_T03.TID_Wall_Electric_Athena_R_T03"),
+            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Spikes_Athena_R_T03.TID_Floor_Spikes_Athena_R_T03"),*/
+            UObject::FindObject<UFortContextTrapItemDefinition>("FortContextTrapItemDefinition TID_ContextTrap_Athena.TID_ContextTrap_Athena"),
             UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Campfire_Athena.TID_Floor_Player_Campfire_Athena"),
 
             UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData"),

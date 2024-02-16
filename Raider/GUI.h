@@ -72,6 +72,10 @@ namespace GUI
                         tab = 0;
                     if (ZeroGUI::ButtonTab(L"Players", FVector2D { 110, 25 }, tab == 1))
                         tab = 1;
+                    if (ZeroGUI::ButtonTab(L"Dev", FVector2D { 110, 25 }, tab == 2))
+                        tab = 2;
+                    if (ZeroGUI::ButtonTab(L"Event", FVector2D { 110, 25 }, tab == 3))
+                        tab = 3;
 
                     ZeroGUI::NextColumn(130.0f);
 
@@ -117,6 +121,107 @@ namespace GUI
                             {
                                 currentPlayer = PlayerState;
                             }
+                        }
+
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        if (ZeroGUI::Button(L"Dump Objects", FVector2D { 100, 25 }))
+                        {
+                            DumpObjects();
+                        }
+
+                        if (ZeroGUI::Button(L"Test Loot", FVector2D { 100, 25 }))
+                        {
+                            auto datatablelib = GetDataTableFunctionLibrary();  
+
+                            auto loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
+                            if (loottierdata)
+                            {
+                                TArray<FName> rownames;
+                                datatablelib->STATIC_GetDataTableRowNames(loottierdata, &rownames);
+
+                                LOG_INFO("rownames.Count {}", rownames.Count);
+                                for (int i = 0; i < rownames.Count; i++)
+                                {
+                                    auto rowptr = loottierdata->RowMap.GetByKey(rownames[i]);
+                                    if (rowptr == nullptr)
+                                    {
+                                        LOG_INFO("rowptr == nullptr");
+                                    }
+                                    else
+                                    {
+                                        auto row = *(FFortLootTierData*)rowptr;
+
+                                        LOG_INFO("rownames[{}] = {}", i, rownames[i].ToString());
+                                        LOG_INFO("    TierGroup = {}", row.TierGroup.ToString());
+                                        LOG_INFO("    Weight = {}", row.Weight);
+                                        LOG_INFO("    LootPackage = {}", row.LootPackage.ToString());
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 3:
+                    {
+
+                        static ABP_Athena_Event_Components_C* EventComponent = nullptr;
+
+                        if (ZeroGUI::Button(L"Spawn Meteor", FVector2D { 100, 25 }))
+                        {
+                            if (EventComponent == nullptr)
+                            {
+                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                TArray<AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                if (EventComponents.Count > 0)
+                                {
+                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                }
+                            }
+
+                            EventComponent->RandomizeSpawnLocation();
+                            EventComponent->SpawnMeteor();
+                        }
+
+                        if (ZeroGUI::Button(L"Spawn Shooting Stars", FVector2D { 100, 25 }))
+                        {
+                            if (EventComponent == nullptr)
+                            {
+                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                TArray<AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                if (EventComponents.Count > 0)
+                                {
+                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                }
+                            }
+
+                            EventComponent->RandomizeSpawnLocation();
+                            EventComponent->SpawnShootingStars();
+                        }
+
+                        static float cometpos = 0.0f;
+                        ZeroGUI::SliderFloat(L"Comet pos", &cometpos, 0, 1);
+
+                        if (ZeroGUI::Button(L"Update Comet", FVector2D { 100, 25 }))
+                        {
+                            if (EventComponent == nullptr)
+                            {
+                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                TArray<AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                if (EventComponents.Count > 0)
+                                {
+                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                }
+                            }
+
+                            EventComponent->CometPosition = cometpos;
+                            EventComponent->OnRep_CometPosition();
                         }
 
                         break;

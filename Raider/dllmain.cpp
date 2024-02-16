@@ -10,6 +10,10 @@ DWORD WINAPI Main(LPVOID lpParam)
 {
     AllocConsole();
 
+    FILE* File;
+
+    freopen_s(&File, "redirect.log", "w", stdout);
+
     raider::utils::Logger::Initialize();
 
     LOG_INFO("Welcome to Raider!");

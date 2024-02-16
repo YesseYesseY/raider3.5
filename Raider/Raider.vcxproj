@@ -107,9 +107,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClInclude Include="GameModes\GameModeBase.hpp" />  
+    <ClInclude Include="GameModes\GameModeBase.hpp" />
     <ClCompile Include="SDK\FN_Athena_PlayerController_functions.cpp" />
     <ClCompile Include="SDK\FN_Basic.cpp" />
+    <ClCompile Include="SDK\FN_BP_Athena_Event_Components_functions.cpp" />
     <ClCompile Include="SDK\FN_BP_VictoryDrone_functions.cpp" />
     <ClCompile Include="SDK\FN_CoreUObject_functions.cpp" />
     <ClCompile Include="SDK\FN_Engine_functions.cpp" />
@@ -120,7 +121,7 @@
     <ClCompile Include="SDK\FN_SlateCore_functions.cpp" />
     <ClCompile Include="SDK\FN_UMG_functions.cpp" />
   </ItemGroup>
-  <ItemGroup> 
+  <ItemGroup>
     <ClInclude Include="GameModes\GameModeDuos.hpp" />
     <ClInclude Include="GameModes\GameModeLateGame.hpp" />
     <ClInclude Include="GameModes\GameModes.hpp" />

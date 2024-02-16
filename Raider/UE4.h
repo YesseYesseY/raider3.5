@@ -63,6 +63,11 @@ FORCEINLINE UKismetSystemLibrary* GetKismetSystem()
     return reinterpret_cast<UKismetSystemLibrary*>(UKismetSystemLibrary::StaticClass());
 }
 
+FORCEINLINE UDataTableFunctionLibrary* GetDataTableFunctionLibrary()
+{
+    return reinterpret_cast<UDataTableFunctionLibrary*>(UDataTableFunctionLibrary::StaticClass());
+}
+
 FORCEINLINE UFortKismetLibrary* GetFortKismet()
 {
     return ((UFortKismetLibrary*)UFortKismetLibrary::StaticClass());
