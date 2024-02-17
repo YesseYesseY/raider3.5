@@ -209,4 +209,29 @@ namespace Utils
 
         return distr(gen);
     }
+
+    
+    template <typename T>
+    T WeightedRand(const std::vector<T>& entries)
+    {
+        float totalWeight = 0.0f;
+        for (int i = 0; i < entries.size(); i++)
+        {
+            totalWeight += entries[i].Weight;
+        }
+
+        float randomValue = static_cast<float>(rand()) / RAND_MAX * totalWeight;
+
+        float cursor = 0.0f;
+        for (int i = 0; i < entries.size(); i++)
+        {
+            cursor += entries[i].Weight;
+            if (cursor >= randomValue)
+            {
+                return entries[i];
+            }
+        }
+
+        return entries[0];
+    }
 };

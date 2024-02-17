@@ -135,31 +135,52 @@ namespace GUI
 
                         if (ZeroGUI::Button(L"Test Loot", FVector2D { 100, 25 }))
                         {
+                            std::map<std::string, std::vector<FFortLootTierData>> ltd;
+                            std::map<std::string, std::vector<FFortLootPackageData>> lpd;
                             auto datatablelib = GetDataTableFunctionLibrary();  
-
+                            
                             auto loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
+                            auto lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
                             if (loottierdata)
                             {
-                                TArray<FName> rownames;
-                                datatablelib->STATIC_GetDataTableRowNames(loottierdata, &rownames);
-
-                                LOG_INFO("rownames.Count {}", rownames.Count);
-                                for (int i = 0; i < rownames.Count; i++)
+                                for (auto Pair : loottierdata->RowMap)
                                 {
-                                    auto rowptr = loottierdata->RowMap.GetByKey(rownames[i]);
-                                    if (rowptr == nullptr)
-                                    {
-                                        LOG_INFO("rowptr == nullptr");
-                                    }
-                                    else
-                                    {
-                                        auto row = *(FFortLootTierData*)rowptr;
+                                    auto rowptr = Pair.Value();
+                                    auto row = *(FFortLootTierData*)rowptr;
+                                    ltd[row.TierGroup.ToString()].push_back(row);
+                                }
+                            }
+                            if (lootpackage)
+                            {
 
-                                        LOG_INFO("rownames[{}] = {}", i, rownames[i].ToString());
-                                        LOG_INFO("    TierGroup = {}", row.TierGroup.ToString());
-                                        LOG_INFO("    Weight = {}", row.Weight);
-                                        LOG_INFO("    LootPackage = {}", row.LootPackage.ToString());
-                                    }
+                                for (auto Pair : lootpackage->RowMap)
+                                {
+                                    auto rowptr = Pair.Value();
+                                    auto row = *(FFortLootPackageData*)rowptr;
+                                    lpd[row.LootPackageID.ToString()].push_back(row);
+                                }
+                            }
+
+                            for (int i = 0; i < 25; i++)
+                            {
+                                auto tg = "Loot_AthenaFloorLoot";
+                                auto ok = Utils::WeightedRand(ltd[tg]);
+                                auto drops = 0;
+                                for (int j = 0; j < ok.LootPackageCategoryWeightArray.Count; j++)
+                                    if (ok.LootPackageCategoryWeightArray[j] == 1)
+                                        drops++;
+                                //LOG_INFO("{} drops for {}", drops, ok.LootPackage.ToString());
+
+                                auto ok2 = lpd[ok.LootPackage.ToString()];
+                                LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
+                                for (int j = 0; j < drops; j++)
+                                {
+                                    if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
+                                        continue;
+                                    auto ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
+                                    //if (ok3.Annotation.IsValid()) LOG_INFO("    {}: {}", j, ok3.Annotation.ToString());
+                                    auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
+                                    LOG_INFO("    {}: {}", j, unk.ObjectID.AssetPathName.ToString());
                                 }
                             }
                         }
@@ -205,7 +226,7 @@ namespace GUI
                         }
 
                         static float cometpos = 0.0f;
-                        ZeroGUI::SliderFloat(L"Comet pos", &cometpos, 0, 1);
+                        ZeroGUI::SliderFloat(L"Comet pos", &cometpos, 0, 1, L"%.02f");
 
                         if (ZeroGUI::Button(L"Update Comet", FVector2D { 100, 25 }))
                         {

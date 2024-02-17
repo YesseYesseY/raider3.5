@@ -9,7 +9,7 @@
 #include "UE4.h"
 
 // #define LOGGING
-//#define CHEATS
+&&#define CHEATS
 #define MAXPLAYERS 100
 
 // Define the hook with ufunction full name
@@ -85,57 +85,14 @@ namespace UFunctionHooks
                         auto& Command = Arguments[0];
                         std::transform(Command.begin(), Command.end(), Command.begin(), ::tolower);
 
-                        if (Command == "revive" && Pawn->bIsDBNO)
+                        if (Command == "start")
                         {
-                            Pawn->bIsDBNO = false;
-                            Pawn->OnRep_IsDBNO();
-
-                            // PC->ClientOnPawnRevived(InstigatorPC);
-                            Pawn->SetHealth(100);
-                        }
-
-                        else if (Command == "testindicator") // It doesn't replicate to teammates for some reason.
-                        {
-                            auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
-
-                            if (PlayerState)
-                            {
-                                PlayerState->OnRep_MapIndicatorPos();
-                                ClientMessage(PC, L"Updated Minimap Indicator!");
-                            }
-                        }
-
-                        else if (Command == "giveweapon" && NumArgs >= 1)
-                        {
-                            auto& weaponName = Arguments[1];
-                            int slot = 1;
-                            int count = 1;
-
-                            try
-                            {
-                                if (NumArgs >= 2)
-                                    slot = std::stoi(Arguments[2]);
-
-                                if (NumArgs >= 3)
-                                    count = std::stoi(Arguments[3]);
-                            }
-                            catch (...)
-                            {
-                            }
-
-                            auto WID = UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition " + weaponName + '.' + weaponName);
-
-                            if (WID && WID->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
-                            {
-                                AddItemWithUpdate(PC, WID, slot, EFortQuickBars::Primary, count);
-                                ClientMessage(PC, std::wstring(L"Successfully gave " + count + std::wstring(L" ") + toWStr(weaponName) + L" to slot " + std::to_wstring(slot)).c_str());
-                            }
-                            else
-                                ClientMessage(PC, L"Requested item is not a weapon!\n");
+                            PC->ClientMessage(L"starting Aircraft!", FName(), 0);
+                            GetKismetSystem()->STATIC_ExecuteConsoleCommand(GetWorld(), L"startaircraft", nullptr);
                         }
 
                         else
-                            ClientMessage(PC, L"Unable to handle command!");
+                            PC->ClientMessage(L"Unable to handle command!", FName(), 0);
                     }
                 }
             }
@@ -183,6 +140,28 @@ namespace UFunctionHooks
 
             if (PC && Params && CurrentBuildClass)
             {
+                //auto SupportSystem = reinterpret_cast<AAthena_GameState_C*>(GetWorld()->GameState)->StructuralSupportSystem;
+                //if (SupportSystem->IsWorldLocValid(Params->BuildLoc))
+                //{
+                //    auto BuildingActor = (ABuildingSMActor*)Spawners::SpawnActor(CurrentBuildClass, Params->BuildLoc, Params->BuildRot, PC, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+                //    TArray<ABuildingActor*> Existing;
+                //    if (SupportSystem->K2_CanAddBuildingActorToGrid(GetWorld(), BuildingActor, Params->BuildLoc, Params->BuildRot, Params->bMirrored, false, &Existing) == EFortStructuralGridQueryResults::CanAdd && Existing.Count <= 0) 
+                //    {
+
+                //        BuildingActor->DynamicBuildingPlacementType = EDynamicBuildingPlacementType::DestroyAnythingThatCollides;
+                //        BuildingActor->SetMirrored(Params->bMirrored);
+                //    //    // BuildingActor->PlacedByPlacementTool();
+                //        BuildingActor->InitializeKismetSpawnedBuildingActor(BuildingActor, PC);
+                //        auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
+                //        BuildingActor->Team = PlayerState->TeamIndex;
+                //    }
+                //    else
+                //    {
+                //        BuildingActor->SetActorScale3D({});
+                //        BuildingActor->SilentDie();
+                //    }
+                //}
+
                 auto BuildingActor = (ABuildingSMActor*)Spawners::SpawnActor(CurrentBuildClass, Params->BuildLoc, Params->BuildRot, PC, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
                 if (BuildingActor && CanBuild(BuildingActor))
                 {
@@ -510,30 +489,6 @@ namespace UFunctionHooks
                     Container->bAlreadySearched = true;
                     Container->OnRep_bAlreadySearched();
 
-                    /*
-                     * Loot Tier Groups:
-                     *  - Chests: Loot_Treasure
-                     *  - Ammo Box: Loot_Ammo
-                     */
-
-                    // auto LootTierGroup = Container->SearchLootTierGroup;
-
-                    // printf("Loot Tier: %d\n", Container->GetLootTier());
-                    // printf("Loot Tier Group: %s\n", Container->SearchLootTierGroup.ToString().c_str());
-                    // printf("Loot Tier Key: %d\n", Container->ContainerLootTierKey.ToString().c_str());
-                    // printf("Quota Loot Tier: %d\n", Container->SearchLootTierChosenQuotaInfo.LootTier);
-                    // printf("Quota Loot Tier Key: %s\n", Container->SearchLootTierChosenQuotaInfo.LootTierKey.ToString().c_str());
-
-                    // auto GameState = reinterpret_cast<AAthena_GameState_C*>(GetWorld()->GameState);
-                    // TArray<FFortItemEntry> OutDrops;
-                    // GetFortKismet()->STATIC_PickLootDrops(Container->SearchLootTierGroup, -1, 0, &OutDrops);
-
-                    // printf("Size: %d\n", OutDrops.Num());
-                    // for(int i = 0; i < OutDrops.Num(); i++)
-                    //{
-                    //     FFortItemEntry Drop = OutDrops[i];
-                    //     printf("Drop: %s\n", Drop.ItemDefinition->GetName().c_str());
-                    // }
                 }
             }
 

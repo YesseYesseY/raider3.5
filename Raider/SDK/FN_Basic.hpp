@@ -442,7 +442,7 @@ namespace SDK
     };
 
     template <typename ObjectType>
-    class TSoftObjectPtr : FSoftObjectPtr
+    class TSoftObjectPtr : public FSoftObjectPtr
     {
     };
 
