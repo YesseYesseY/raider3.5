@@ -9,7 +9,7 @@
 #include "UE4.h"
 
 // #define LOGGING
-&&#define CHEATS
+//#define CHEATS
 #define MAXPLAYERS 100
 
 // Define the hook with ufunction full name
@@ -489,6 +489,22 @@ namespace UFunctionHooks
                     Container->bAlreadySearched = true;
                     Container->OnRep_bAlreadySearched();
 
+                    LOG_INFO("{}", Container->Class->GetFullName());
+
+                    auto TierGroup = Container->SearchLootTierGroup.ToString();
+
+                    // This can't be the way to do it
+                    if (TierGroup == "Loot_Treasure")
+                    {
+                        TierGroup = "Loot_AthenaTreasure";
+                    }
+                    
+                    auto loot = Game::Mode->GetLoot(TierGroup);
+                    LOG_INFO("Spawning loot at: {}, {}, {}", Container->LootSpawnLocation.X, Container->LootSpawnLocation.Y, Container->LootSpawnLocation.Z);
+                    for (int i = 0; i < loot.size(); i++)
+                    {
+                        Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, Container->K2_GetActorLocation());
+                    }
                 }
             }
 

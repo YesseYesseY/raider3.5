@@ -13,6 +13,12 @@ public:
     virtual void OnPlayerKilled(AFortPlayerControllerAthena* Controller) = 0;
 };
 
+struct LootData
+{
+    UFortItemDefinition* ItemDef;
+    int Count;
+};
+
 class AbstractGameModeBase : protected IGameModeBase
 {
 public:
@@ -49,6 +55,69 @@ public:
     ~AbstractGameModeBase()
     {
         GetWorld()->GameState->AuthorityGameMode->ResetLevel();
+    }
+
+    // TODO: Make this virtual for gamemode to have custom loot ?
+    std::vector<LootData> GetLoot(std::string TierGroup)
+    {
+        std::vector<LootData> ret;
+        if (!ltd.contains(TierGroup))
+        {
+            LOG_ERROR("Invalid TierGroup name {}", TierGroup);
+            return ret;
+        }
+        // Just ignore how messy this is, i've been staring at FModel for hours trying to figure this out and i still don't fully understand it
+        auto ok = Utils::WeightedRand(ltd[TierGroup]);
+
+        // TODO: Figure out cases such as WorldPKG.AthenaLoot.Ammo where NumLootPackageDrops is 1.6
+        auto drops = 0;
+        for (int j = 0; j < ok.LootPackageCategoryWeightArray.Count; j++)
+            if (ok.LootPackageCategoryWeightArray[j] == 1)
+                drops++;
+
+        auto ok2 = lpd[ok.LootPackage.ToString()];
+        //LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
+        for (int j = 0; j < drops; j++)
+        {
+            if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
+                continue;
+            auto ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
+            auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
+            //LOG_INFO("    {}: {}", j, unk.ObjectID.AssetPathName.ToString());
+            auto obj = UObject::FindObject<UFortItemDefinition>(unk.ObjectID.AssetPathName.ToString());
+            if (obj)
+                ret.push_back({obj, ok3.Count});
+            else
+                LOG_INFO("Object name \"{}\" was not found", unk.ObjectID.AssetPathName.ToString())
+        }
+
+        return ret;
+    }
+
+    void InitLoot()
+    {
+        // TODO: Get datatables from playlist?
+        auto loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
+        auto lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
+        if (loottierdata)
+        {
+            for (auto Pair : loottierdata->RowMap)
+            {
+                auto rowptr = Pair.Value();
+                auto row = *(FFortLootTierData*)rowptr;
+                this->ltd[row.TierGroup.ToString()].push_back(row);
+            }
+        }
+        if (lootpackage)
+        {
+
+            for (auto Pair : lootpackage->RowMap)
+            {
+                auto rowptr = Pair.Value();
+                auto row = *(FFortLootPackageData*)rowptr;
+                this->lpd[row.LootPackageID.ToString()].push_back(row);
+            }
+        }
     }
 
     bool isRespawnEnabled()
@@ -265,6 +334,10 @@ private:
     bool bRespawnEnabled = false;
     bool bRegenEnabled = false;
     bool bRejoinEnabled = false;
+
+    // Looting stuff
+    std::map<std::string, std::vector<FFortLootTierData>> ltd;
+    std::map<std::string, std::vector<FFortLootPackageData>> lpd;
 
     UFortPlaylistAthena* BasePlaylist;
 };

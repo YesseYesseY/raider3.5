@@ -93,14 +93,16 @@ namespace GUI
                                     bStartedBus = true;
                                 }
 
-                                GameState->bGameModeWillSkipAircraft = false;
-                                GameState->AircraftStartTime = 0;
-                                GameState->WarmupCountdownEndTime = 0;
+                                //GameState->bGameModeWillSkipAircraft = false;
+                                //GameState->AircraftStartTime = 0;
+                                //GameState->WarmupCountdownEndTime = 0;
 
                                 GetKismetSystem()->STATIC_ExecuteConsoleCommand(GetWorld(), L"startaircraft", nullptr);
 
-                                Game::Mode->InitializeGameplay();
-                                Native::OnlineBeacon::PauseBeaconRequests(HostBeacon, true);
+                                Game::Mode->InitLoot();
+
+                                //Game::Mode->InitializeGameplay();
+                                //Native::OnlineBeacon::PauseBeaconRequests(HostBeacon, true);
                                 LOG_INFO("The bus has been started!")
                                 bStartedBus = true;
                             }
