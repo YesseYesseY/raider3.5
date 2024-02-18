@@ -339,10 +339,15 @@ struct FVector
         return FVector { this->X + A.X, this->Y + A.Y, this->Z + A.Z };
     }
 
-	auto operator*(float A)
-	{
-		return FVector{ this->X * A, this->Y * A, this->Z * A };
-	}
+    auto operator*(float A)
+    {
+        return FVector { this->X * A, this->Y * A, this->Z * A };
+    }
+
+    auto operator*(FVector A)
+    {
+        return FVector { this->X * A.X, this->Y * A.Y, this->Z * A.Z };
+    }
 
     auto operator!=(FVector A) const
     {

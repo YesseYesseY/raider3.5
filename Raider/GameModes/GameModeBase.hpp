@@ -84,7 +84,7 @@ public:
             auto ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
             auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
             //LOG_INFO("    {}: {}", j, unk.ObjectID.AssetPathName.ToString());
-            auto obj = UObject::FindObject<UFortItemDefinition>(unk.ObjectID.AssetPathName.ToString());
+            auto obj = (UFortItemDefinition*)UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
             if (obj)
                 ret.push_back({obj, ok3.Count});
             else

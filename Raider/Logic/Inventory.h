@@ -3,6 +3,7 @@
 #include "../UE4.h"
 #include "Spawners.h"
 
+// Pretty sure most of this needs a rework
 namespace Inventory
 {
     static void Update(AFortPlayerController* Controller, int Dirty = 0, bool bRemovedItem = false)

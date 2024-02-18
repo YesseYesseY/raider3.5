@@ -433,7 +433,7 @@ namespace UFunctionHooks
 
                     PC->ClientSetRotation(Params->ClientRotation, false);
 
-                    ((AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState)->Aircrafts[0]->PlayEffectsForPlayerJumped();
+                    ((AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState)->Aircrafts[0]->PlayEffectsForPlayerJumped(); // TODO: fix for gammodes with 2 aircrafts (50v50 v2)
                     PC->ActivateSlot(EFortQuickBars::Primary, 0, 0, true); // Select the pickaxe
 
                     bool bFound = false;
@@ -500,10 +500,10 @@ namespace UFunctionHooks
                     }
                     
                     auto loot = Game::Mode->GetLoot(TierGroup);
-                    LOG_INFO("Spawning loot at: {}, {}, {}", Container->LootSpawnLocation.X, Container->LootSpawnLocation.Y, Container->LootSpawnLocation.Z);
+                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorForwardVector() * 4.0f); // TODO: proper spawn location & drop from chest
                     for (int i = 0; i < loot.size(); i++)
                     {
-                        Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, Container->K2_GetActorLocation());
+                        Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, spawnloc);
                     }
                 }
             }
