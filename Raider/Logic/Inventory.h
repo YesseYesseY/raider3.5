@@ -261,7 +261,7 @@ namespace Inventory
             if (!Inventory::IsGuidInInventory(Controller, Guid))
                 return Weapon;
 
-            if (weaponClass == ATrapTool_C::StaticClass())
+            if (weaponClass == ATrapTool_C::StaticClass() || weaponClass == ATrapTool_ContextTrap_Athena_C::StaticClass() || weaponClass == AFortDecoTool_ContextTrap::StaticClass())
             {
                 Weapon = static_cast<AFortWeapon*>(Spawners::SpawnActor(weaponClass, {}, Pawn)); // Other people can't see their weapon.
 
@@ -270,7 +270,6 @@ namespace Inventory
                     Weapon->bReplicates = true;
                     Weapon->bOnlyRelevantToOwner = false;
                     
-                    // TODO: Fix context traps
                     if (Definition->IsA(UFortContextTrapItemDefinition::StaticClass()))
                     {
                         static_cast<AFortDecoTool_ContextTrap*>(Weapon)->ContextTrapItemDefinition = (UFortContextTrapItemDefinition*)Definition;
@@ -488,7 +487,7 @@ namespace Inventory
                                 if (FocusedGuid == Guid)
                                 {
                                     // if (Params->Pickup->MultiItemPickupEntries)
-                                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, 1 /* ItemInstance->ItemEntry.Count */, Controller->Pawn->K2_GetActorLocation());
+                                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, 1 /*ItemInstance->ItemEntry.Count*/, Controller->Pawn->K2_GetActorLocation());
                                     break;
                                 }
                             }

@@ -98,8 +98,30 @@ namespace GUI
                                 //GameState->WarmupCountdownEndTime = 0;
 
                                 GetKismetSystem()->STATIC_ExecuteConsoleCommand(GetWorld(), L"startaircraft", nullptr);
-
+                                
                                 Game::Mode->InitLoot();
+
+                                //auto wood = UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData");
+                                //auto pump = UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition WID_Shotgun_Standard_Athena_UC_Ore_T03.WID_Shotgun_Standard_Athena_UC_Ore_T03");
+                                //TArray<AActor*> vendings;
+                                //GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass B_Athena_VendingMachine.B_Athena_VendingMachine_C"), &vendings);
+                                //LOG_INFO("Found {} vending machines", vendings.Count);
+                                //for (int i = 0; i < vendings.Count; i++)
+                                //{
+                                //    auto vending = (ABuildingItemCollectorActor*)vendings[i];
+
+                                //    //FColletorUnitInfo info;
+                                //    //info.InputItem = wood;
+                                //    //info.OutputItem = pump;
+                                //    //vending->ItemCollections.Add(info);
+                                //}
+
+                                //auto vendclass = UObject::FindObject<UBlueprintGeneratedClass>("BlueprintGeneratedClass B_Athena_VendingMachine.B_Athena_VendingMachine_C");
+                                //
+                                //for (auto clas = (UClass*)vendclass; clas; clas = static_cast<UClass*>(clas->SuperField))
+                                //{
+                                //    LOG_INFO("OK: {}", clas->GetFullName());
+                                //}
 
                                 //Game::Mode->InitializeGameplay();
                                 //Native::OnlineBeacon::PauseBeaconRequests(HostBeacon, true);

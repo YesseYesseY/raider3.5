@@ -113,7 +113,8 @@ namespace Spawners
         Transform.Rotation = Utils::RotToQuat(Params->Rotation);
         Transform.Translation = Params->Location;
 
-        auto TrapDef = static_cast<UFortTrapItemDefinition*>(Tool->ItemDefinition);
+        UFortTrapItemDefinition* TrapDef;
+        TrapDef = static_cast<UFortTrapItemDefinition*>(Tool->ItemDefinition);
 
         if (TrapDef)
         {
@@ -125,24 +126,27 @@ namespace Spawners
 
                 auto Pawn = static_cast<APlayerPawn_Athena_C*>(Tool->Owner);
 
-                Trap->InitializeKismetSpawnedBuildingActor(Trap, static_cast<AFortPlayerController*>(Pawn->Controller));
-
                 Trap->AttachedTo = Params->AttachedActor;
                 Trap->OnRep_AttachedTo();
+
+                Trap->InitializeKismetSpawnedBuildingActor(Trap, static_cast<AFortPlayerController*>(Pawn->Controller));
 
                 auto PlayerState = (AFortPlayerStateAthena*)Pawn->Controller->PlayerState;
                 Trap->Team = PlayerState->TeamIndex;
 
                 auto TrapAbilitySet = Trap->AbilitySet;
 
-                for (int i = 0; i < TrapAbilitySet->GameplayAbilities.Num(); i++) // this fixes traps crashing the game // don't ask how
+                if (TrapAbilitySet)
                 {
-                    auto Ability = TrapAbilitySet->GameplayAbilities[i];
+                    for (int i = 0; i < TrapAbilitySet->GameplayAbilities.Num(); i++) // this fixes traps crashing the game // don't ask how
+                    {
+                        auto Ability = TrapAbilitySet->GameplayAbilities[i];
 
-                    if (!Ability)
-                        continue;
+                        if (!Ability)
+                            continue;
 
-                    Abilities::GrantGameplayAbility(Pawn, Ability);
+                        Abilities::GrantGameplayAbility(Pawn, Ability);
+                    }
                 }
             }
         }
