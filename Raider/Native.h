@@ -11,6 +11,10 @@ inline UFortEngine* GetEngine()
 
 namespace Native
 {
+    namespace Inventory
+    {
+        void(__fastcall* ReloadThing)(AFortWeapon* Weapon, uint32_t AmountToRemove);
+    }
     namespace Actor
     {
         inline __int64 (*GetNetMode)(__int64* a1);
@@ -193,6 +197,10 @@ namespace Native
         Address = Utils::FindPattern(Patterns::GetPlayerViewPoint);
         CheckNullFatal(Address, "Failed to find PlayerController::GetPlayerViewPoint");
         AddressToFunction(Address, PlayerController::GetPlayerViewPoint);
+
+        Address = Utils::FindPattern(Patterns::ReloadThing);
+        CheckNullFatal(Address, "Failed to find ReloadThing");
+        AddressToFunction(Address, Inventory::ReloadThing);
 
         ProcessEvent = reinterpret_cast<decltype(ProcessEvent)>(GetEngine()->Vtable[0x40]);
     }

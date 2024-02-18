@@ -3,7 +3,7 @@
 #include "GUI.h"
 #include "UFunctionHooks.h"
 
-// #define LOGGING
+#define LOGGING
 
 namespace Hooks
 {
@@ -41,6 +41,15 @@ namespace Hooks
     char KickPlayer(__int64, __int64, __int64) { return 0; }
     uint64 GetNetMode(UWorld*) { return NM_ListenServer; }
     void World_NotifyControlMessage(UWorld*, UNetConnection* Connection, uint8 MessageType, void* Bunch) { Native::World::NotifyControlMessage(GetWorld(), Connection, MessageType, Bunch); }
+
+    void __fastcall ReloadThing(AFortWeapon* Weapon, uint32_t AmountToRemove)
+    {
+        auto ammodef = (UFortAmmoItemDefinition*)UObject::GObjects->GetByIndex(((*(TSoftObjectPtr<UObject*>*)&Weapon->WeaponData->UnknownData10).WeakPtr.ObjectIndex));
+        auto pawn = (APawn*)Weapon->Owner;
+        LOG_INFO("TODO: Remove {} {} from {}", AmountToRemove, ammodef->GetName(), pawn->PlayerState->GetPlayerName().ToString());
+
+        //return Native::Inventory::ReloadThing(Weapon, AmountToRemove);
+    }
 
     void __fastcall GetPlayerViewPoint(APlayerController* pc, FVector* a2, FRotator* a3)
     {
@@ -154,9 +163,11 @@ namespace Hooks
             auto FunctionName = Function->GetName();
             if (Function->FunctionFlags & 0x00200000 || (Function->FunctionFlags & 0x01000000 && FunctionName.find("Ack") == -1 && FunctionName.find("AdjustPos") == -1))
             {
-                if (FunctionName.find("ServerUpdateCamera") == -1 && FunctionName.find("ServerMove") == -1)
+                if (FunctionName.find("ServerUpdateCamera") == -1 && FunctionName.find("ServerMove") == -1 && FunctionName.find("ServerFireAIDirectorEventBatch") == -1 &&
+                    FunctionName.find("ServerTriggerCombatEventBatch") == -1 && FunctionName.find("ServerTriggerCombatEvent") == -1 && FunctionName.find("ServerFireAIDirectorEvent") == -1 &&
+                    FunctionName.find("ServerEndAbility") == -1 && FunctionName.find("ClientEndAbility") == -1 && FunctionName.find("ServerCurrentMontageSetNextSectionName") == -1)
                 {
-                    std::cout << "RPC Called: " << FunctionName << '\n';
+                    LOG_INFO("RPC Called: {}", FunctionName);
                 }
             }
 #endif

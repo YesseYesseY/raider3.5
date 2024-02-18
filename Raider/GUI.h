@@ -103,20 +103,9 @@ namespace GUI
 
                                 //auto wood = UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData");
                                 //auto pump = UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition WID_Shotgun_Standard_Athena_UC_Ore_T03.WID_Shotgun_Standard_Athena_UC_Ore_T03");
-                                //TArray<AActor*> vendings;
-                                //GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass B_Athena_VendingMachine.B_Athena_VendingMachine_C"), &vendings);
-                                //LOG_INFO("Found {} vending machines", vendings.Count);
-                                //for (int i = 0; i < vendings.Count; i++)
-                                //{
-                                //    auto vending = (ABuildingItemCollectorActor*)vendings[i];
+                                
 
-                                //    //FColletorUnitInfo info;
-                                //    //info.InputItem = wood;
-                                //    //info.OutputItem = pump;
-                                //    //vending->ItemCollections.Add(info);
-                                //}
-
-                                //auto vendclass = UObject::FindObject<UBlueprintGeneratedClass>("BlueprintGeneratedClass B_Athena_VendingMachine.B_Athena_VendingMachine_C");
+                                //auto vendclass = UObject::FindObject<UBlueprintGeneratedClass>("BlueprintGeneratedClass Tiered_Athena_FloorLoot_Warmup.Tiered_Athena_FloorLoot_Warmup_C");
                                 //
                                 //for (auto clas = (UClass*)vendclass; clas; clas = static_cast<UClass*>(clas->SuperField))
                                 //{
@@ -156,57 +145,13 @@ namespace GUI
                         {
                             DumpObjects();
                         }
+                        if (ZeroGUI::Button(L"Init loot", FVector2D { 100, 25 }))
+                        {
+                            Game::Mode->InitLoot();
+                        }
 
                         if (ZeroGUI::Button(L"Test Loot", FVector2D { 100, 25 }))
                         {
-                            std::map<std::string, std::vector<FFortLootTierData>> ltd;
-                            std::map<std::string, std::vector<FFortLootPackageData>> lpd;
-                            auto datatablelib = GetDataTableFunctionLibrary();  
-                            
-                            auto loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
-                            auto lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
-                            if (loottierdata)
-                            {
-                                for (auto Pair : loottierdata->RowMap)
-                                {
-                                    auto rowptr = Pair.Value();
-                                    auto row = *(FFortLootTierData*)rowptr;
-                                    ltd[row.TierGroup.ToString()].push_back(row);
-                                }
-                            }
-                            if (lootpackage)
-                            {
-
-                                for (auto Pair : lootpackage->RowMap)
-                                {
-                                    auto rowptr = Pair.Value();
-                                    auto row = *(FFortLootPackageData*)rowptr;
-                                    lpd[row.LootPackageID.ToString()].push_back(row);
-                                }
-                            }
-
-                            for (int i = 0; i < 25; i++)
-                            {
-                                auto tg = "Loot_AthenaFloorLoot";
-                                auto ok = Utils::WeightedRand(ltd[tg]);
-                                auto drops = 0;
-                                for (int j = 0; j < ok.LootPackageCategoryWeightArray.Count; j++)
-                                    if (ok.LootPackageCategoryWeightArray[j] == 1)
-                                        drops++;
-                                //LOG_INFO("{} drops for {}", drops, ok.LootPackage.ToString());
-
-                                auto ok2 = lpd[ok.LootPackage.ToString()];
-                                LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
-                                for (int j = 0; j < drops; j++)
-                                {
-                                    if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
-                                        continue;
-                                    auto ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
-                                    //if (ok3.Annotation.IsValid()) LOG_INFO("    {}: {}", j, ok3.Annotation.ToString());
-                                    auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
-                                    LOG_INFO("    {}: {}", j, unk.ObjectID.AssetPathName.ToString());
-                                }
-                            }
                         }
                         break;
                     }

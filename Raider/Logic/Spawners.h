@@ -114,7 +114,7 @@ namespace Spawners
         Transform.Translation = Params->Location;
 
         UFortTrapItemDefinition* TrapDef;
-        // This is not correct, the trap showcased in real gameplay on hover is the green context trap and not the blue traps, but it works i guess
+        // This is not correct but it works i guess
         if (Tool->IsA(AFortDecoTool_ContextTrap::StaticClass()))
         {
             auto buildpos = Params->AttachedActor->K2_GetActorLocation();

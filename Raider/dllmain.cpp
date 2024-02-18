@@ -34,6 +34,7 @@ DWORD WINAPI Main(LPVOID lpParam)
     DetourAttachE(NetDebug, Hooks::NetDebug);
     DetourAttachE(ProcessEvent, Hooks::ProcessEventHook);
     DetourAttachE(Native::PlayerController::GetPlayerViewPoint, Hooks::GetPlayerViewPoint);
+    DetourAttachE(Native::Inventory::ReloadThing, Hooks::ReloadThing);
     DETOUR_END
 
     LOG_INFO("Base Address: {:X}", Imagebase);
