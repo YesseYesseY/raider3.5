@@ -12602,7 +12602,7 @@ class UFortTrapItemDefinition : public UFortDecoItemDefinition
 public:
 	unsigned char                                      UnknownData00[0x4];                                       // 0x0840(0x0004) MISSED OFFSET
 	bool                                               bKnockBackUsingPawnDir;                                   // 0x0844(0x0001) (Edit, BlueprintVisible, BlueprintReadOnly, ZeroConstructor, IsPlainOldData)
-	unsigned char                                      UnknownData01[0xB];                                       // 0x0845(0x000B) MISSED OFFSET
+	unsigned char                                      UnknownData01[0xB - sizeof(void*)];                                       // 0x0845(0x000B) MISSED OFFSET
 
 	static UClass* StaticClass()
 	{
@@ -12618,6 +12618,7 @@ public:
 class UFortContextTrapItemDefinition : public UFortTrapItemDefinition
 {
 public:
+	class UFortTrapItemDefinition* FloorTrap; // Thank you sdk <3
 	class UFortTrapItemDefinition*                     CeilingTrap;                                              // 0x0850(0x0008) (Edit, BlueprintVisible, BlueprintReadOnly, ZeroConstructor, IsPlainOldData)
 	class UFortTrapItemDefinition*                     WallTrap;                                                 // 0x0858(0x0008) (Edit, BlueprintVisible, BlueprintReadOnly, ZeroConstructor, IsPlainOldData)
 

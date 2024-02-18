@@ -114,7 +114,21 @@ namespace Spawners
         Transform.Translation = Params->Location;
 
         UFortTrapItemDefinition* TrapDef;
-        TrapDef = static_cast<UFortTrapItemDefinition*>(Tool->ItemDefinition);
+        // This is not correct, the trap showcased in real gameplay on hover is the green context trap and not the blue traps, but it works i guess
+        if (Tool->IsA(AFortDecoTool_ContextTrap::StaticClass()))
+        {
+            auto buildpos = Params->AttachedActor->K2_GetActorLocation();
+            if (Params->AttachedActor->BuildingAttachmentSlot == EBuildingAttachmentSlot::SLOT_Wall)
+                TrapDef = static_cast<AFortDecoTool_ContextTrap*>(Tool)->ContextTrapItemDefinition->WallTrap;
+            else if (buildpos.Z > Params->Location.Z)
+                TrapDef = static_cast<AFortDecoTool_ContextTrap*>(Tool)->ContextTrapItemDefinition->CeilingTrap;
+            else
+                TrapDef = static_cast<AFortDecoTool_ContextTrap*>(Tool)->ContextTrapItemDefinition->FloorTrap;
+        }
+        else
+        {
+            TrapDef = static_cast<UFortTrapItemDefinition*>(Tool->ItemDefinition);
+        }
 
         if (TrapDef)
         {
@@ -126,10 +140,10 @@ namespace Spawners
 
                 auto Pawn = static_cast<APlayerPawn_Athena_C*>(Tool->Owner);
 
+                Trap->InitializeKismetSpawnedBuildingActor(Trap, static_cast<AFortPlayerController*>(Pawn->Controller));
+
                 Trap->AttachedTo = Params->AttachedActor;
                 Trap->OnRep_AttachedTo();
-
-                Trap->InitializeKismetSpawnedBuildingActor(Trap, static_cast<AFortPlayerController*>(Pawn->Controller));
 
                 auto PlayerState = (AFortPlayerStateAthena*)Pawn->Controller->PlayerState;
                 Trap->Team = PlayerState->TeamIndex;
