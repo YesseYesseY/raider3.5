@@ -562,6 +562,53 @@ namespace Inventory
         return ret;
     }
 
+    static bool TryDeleteItemEntry(AFortPlayerControllerAthena* PlayerController, int Slot)
+    {
+        bool success = false;
+
+        PlayerController->WorldInventory->Inventory.ItemInstances.RemoveAt(Slot);
+        PlayerController->WorldInventory->Inventory.ReplicatedEntries.RemoveAt(Slot);
+        Update(PlayerController, 0, true);
+
+        return success;
+    }
+
+    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove)
+    {
+        auto& ItemInstances = PlayerController->WorldInventory->Inventory.ItemInstances;
+
+        bool success = false;
+        for (int i = 0; i < ItemInstances.Num(); i++)
+        {
+            auto ItemInstance = ItemInstances[i];
+
+            if (!ItemInstance)
+                continue;
+
+            if (ItemInstance->ItemEntry.ItemDefinition && ItemInstance->ItemEntry.ItemDefinition == ItemDef)
+            {
+                auto finalcount = ItemInstance->ItemEntry.Count - AmountToRemove;
+                if (finalcount > 0)
+                {
+                    ItemInstance->ItemEntry.Count = finalcount;
+                    PlayerController->WorldInventory->Inventory.ReplicatedEntries[i].Count = finalcount;
+                }
+                else
+                {
+                    if (!TryDeleteItemEntry(PlayerController, i))
+                    {
+                        LOG_ERROR("Failed to remove item entry {}", i);
+                    }
+                }
+                Update(PlayerController, i);
+                success = true;
+                break;
+            }
+        }
+
+        return success;
+    }
+
     static void Init(AFortPlayerControllerAthena* PlayerController)
     {
         PlayerController->QuickBars = Spawners::SpawnActor<AFortQuickBars>({ -280, 400, 3000 }, PlayerController);
@@ -596,7 +643,7 @@ namespace Inventory
         {
             if (Item->IsA(UFortAmmoItemDefinition::StaticClass()) || Item->IsA(UFortResourceItemDefinition::StaticClass()))
             {
-                AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 999);
+                AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 100);
                 continue;
             }
 
