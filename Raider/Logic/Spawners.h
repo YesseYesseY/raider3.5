@@ -136,7 +136,7 @@ namespace Spawners
 
             if (Trap)
             {
-                Trap->TrapData = TrapDef;
+                Trap->TrapData = static_cast<UFortTrapItemDefinition*>(Tool->ItemDefinition);
 
                 auto Pawn = static_cast<APlayerPawn_Athena_C*>(Tool->Owner);
 
