@@ -564,8 +564,6 @@ namespace Inventory
 
     static bool TryDeleteItem(AFortPlayerControllerAthena* PlayerController, int Index)
     {
-        bool success = false;
-
         auto guid = PlayerController->WorldInventory->Inventory.ItemInstances[Index]->GetItemGuid();
         PlayerController->WorldInventory->Inventory.ItemInstances.RemoveAt(Index);
         PlayerController->WorldInventory->Inventory.ReplicatedEntries.RemoveAt(Index);
@@ -624,13 +622,15 @@ namespace Inventory
         
         Update(PlayerController, Index, true);
 
-        return success;
+        return true;
     }
 
     static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove)
     {
         auto& ItemInstances = PlayerController->WorldInventory->Inventory.ItemInstances;
 
+        if (!ItemDef)
+            return false;
         bool success = false;
         for (int i = 0; i < ItemInstances.Num(); i++)
         {
@@ -695,13 +695,21 @@ namespace Inventory
         int Slot = 0;
         for (auto& Item : Items)
         {
-            if (Item->IsA(UFortAmmoItemDefinition::StaticClass()) || Item->IsA(UFortResourceItemDefinition::StaticClass()))
+            if (Item->IsA(UFortAmmoItemDefinition::StaticClass()))
             {
                 AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 100);
                 continue;
             }
+            else if (Item->IsA(UFortResourceItemDefinition::StaticClass()))
+            {
+                AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 500);
+                continue;
+            }
+            else
+            {
+                AddItemToSlot(PlayerController, Item, Slot, EFortQuickBars::Secondary, 1);
+            }
 
-            AddItemToSlot(PlayerController, Item, Slot, EFortQuickBars::Secondary, 1);
             Slot++;
         }
 

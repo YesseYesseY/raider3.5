@@ -171,6 +171,20 @@ namespace UFunctionHooks
                     BuildingActor->InitializeKismetSpawnedBuildingActor(BuildingActor, PC);
                     auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
                     BuildingActor->Team = PlayerState->TeamIndex;
+
+                    UFortResourceItemDefinition* matdef = nullptr;
+
+                    if (BuildingActor->ResourceType == EFortResourceType::Wood)
+                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->WoodItemDefinition;
+                    else if (BuildingActor->ResourceType == EFortResourceType::Stone)
+                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->StoneItemDefinition;
+                    else if (BuildingActor->ResourceType == EFortResourceType::Metal)
+                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->MetalItemDefinition;
+                    
+                    if (!Inventory::TryRemoveItem(PC, matdef, 10))
+                    {
+                        LOG_ERROR("Failed to remove resource from building")
+                    }
                 }
                 else
                 {
@@ -206,7 +220,12 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortDecoTool.ServerSpawnDeco", {
-            Spawners::SpawnDeco((AFortDecoTool*)Object, Parameters);
+            auto Tool = (AFortDecoTool*)Object;
+
+            Spawners::SpawnDeco(Tool, Parameters);
+
+            // TODO: Remove trap after use
+
             return false;
         })
 
