@@ -344,11 +344,18 @@ namespace Inventory
 
             if (Def)
             {
-                auto entry = AddItemToSlot(Controller, Def, i);
-                EquipWeaponDefinition(Controller->Pawn, Def, entry.ItemGuid, -1, true); // kms
+                // if (i <= 1)
+                // {
+                    auto entry = AddItemToSlot(Controller, Def, i);
+                    EquipWeaponDefinition(Controller->Pawn, Def, entry.ItemGuid, -1, true); // kms
 
-                if (i == 0)
-                    pickaxeEntry = entry;
+                    if (i == 0)
+                        pickaxeEntry = entry;
+                // }
+                // else
+                // {
+                //     Spawners::SummonPickup((AFortPlayerPawn*)Controller->Pawn, Def, 1, Controller->Pawn->K2_GetActorLocation());
+                // }
             }
         }
 
@@ -487,7 +494,7 @@ namespace Inventory
                                 if (FocusedGuid == Guid)
                                 {
                                     // if (Params->Pickup->MultiItemPickupEntries)
-                                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, 1 /*ItemInstance->ItemEntry.Count*/, Controller->Pawn->K2_GetActorLocation());
+                                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, ItemInstance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
                                     break;
                                 }
                             }
@@ -508,6 +515,7 @@ namespace Inventory
                         Params->Pickup->OnRep_bPickedUp();
 
                         Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
+                        Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
 
                         Update(Controller);
 
@@ -524,7 +532,9 @@ namespace Inventory
                 {
                     if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
                     {
-                        auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
+                        // While combining items isn't implemented, ammo and resources bug out everything
+                        if (!WorldItemDefinition->IsA(UFortResourceItemDefinition::StaticClass()) && !WorldItemDefinition->IsA(UFortAmmoItemDefinition::StaticClass()))
+                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
                         Params->Pickup->K2_DestroyActor();
 
                         break;

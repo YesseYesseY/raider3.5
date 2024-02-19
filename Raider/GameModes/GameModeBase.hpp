@@ -255,7 +255,12 @@ public:
             FindWID("WID_Assault_AutoHigh_Athena_SR_Ore_T03"), // Gold AR
             FindWID("WID_Sniper_BoltAction_Scope_Athena_R_Ore_T03"), // Blue Bolt Action
             //FindWID("Athena_Shields") // Big Shield Potion
+            // FindWID("Athena_Medkit"),
+            // FindWID("Athena_Medkit"),
+            // FindWID("Athena_Medkit"),
+            // FindWID("Athena_Medkit"),
             FindWID("Athena_Medkit")
+
         };
 
         return Ret;

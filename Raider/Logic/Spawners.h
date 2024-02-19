@@ -74,7 +74,7 @@ namespace Spawners
         auto FortPickup = SpawnActor<AFortPickup>(Location);
 
         FortPickup->bReplicates = true; // should be autmoatic but eh
-        FortPickup->bTossedFromContainer = true;
+        FortPickup->bRandomRotation = true;
 
         FortPickup->PrimaryPickupItemEntry.Count = Count;
         FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
@@ -87,6 +87,7 @@ namespace Spawners
 
         FortPickup->OnRep_PrimaryPickupItemEntry();
         FortPickup->OnRep_TossedFromContainer();
+        FortPickup->TossPickup(Location, nullptr, 6, true);
     }
 
     static void SpawnPickupFromFloorLoot(auto ItemDef, int Count, FVector Location)

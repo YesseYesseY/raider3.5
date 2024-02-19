@@ -519,7 +519,7 @@ namespace UFunctionHooks
                     }
                     
                     auto loot = Game::Mode->GetLoot(TierGroup);
-                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorForwardVector() * 4.0f); // TODO: proper spawn location & drop from chest
+                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorRightVector() * Container->LootSpawnLocation.Z); // Idk wtf i cooked up here but it works LOL
                     for (int i = 0; i < loot.size(); i++)
                     {
                         Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, spawnloc);
