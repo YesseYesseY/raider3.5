@@ -3,7 +3,7 @@
 #include "GUI.h"
 #include "UFunctionHooks.h"
 
-#define LOGGING
+//#define LOGGING
 
 namespace Hooks
 {
@@ -46,7 +46,6 @@ namespace Hooks
     {
         auto ammodef = (UFortAmmoItemDefinition*)UObject::GObjects->GetByIndex(((*(TSoftObjectPtr<UObject*>*)&Weapon->WeaponData->UnknownData10).WeakPtr.ObjectIndex));
         auto pawn = (APawn*)Weapon->Owner;
-        LOG_INFO("TODO: Remove {} {} from {}", AmountToRemove, ammodef->GetName(), pawn->PlayerState->GetPlayerName().ToString());
         if (!Inventory::TryRemoveItem((AFortPlayerControllerAthena*)pawn->Controller, ammodef, AmountToRemove))
         {
             LOG_ERROR("Failed to remove ammo from user");

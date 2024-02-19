@@ -6,13 +6,16 @@
 #include "Logger.hpp"
 #include "ufunctionhooks.h"
 
+//#define REDIRECT_FORTNITE_LOGS
+
 DWORD WINAPI Main(LPVOID lpParam)
 {
     AllocConsole();
 
+#ifdef REDIRECT_FORTNITE_LOGS
     FILE* File;
-
     freopen_s(&File, "redirect.log", "w", stdout);
+#endif
 
     raider::utils::Logger::Initialize();
 

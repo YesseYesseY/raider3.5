@@ -562,13 +562,67 @@ namespace Inventory
         return ret;
     }
 
-    static bool TryDeleteItemEntry(AFortPlayerControllerAthena* PlayerController, int Slot)
+    static bool TryDeleteItem(AFortPlayerControllerAthena* PlayerController, int Index)
     {
         bool success = false;
 
-        PlayerController->WorldInventory->Inventory.ItemInstances.RemoveAt(Slot);
-        PlayerController->WorldInventory->Inventory.ReplicatedEntries.RemoveAt(Slot);
-        Update(PlayerController, 0, true);
+        auto guid = PlayerController->WorldInventory->Inventory.ItemInstances[Index]->GetItemGuid();
+        PlayerController->WorldInventory->Inventory.ItemInstances.RemoveAt(Index);
+        PlayerController->WorldInventory->Inventory.ReplicatedEntries.RemoveAt(Index);
+        int slot = -1;
+        bool primary = false;
+        for (int i = 0; i < PlayerController->QuickBars->PrimaryQuickBar.Slots.Count; i++)
+        {
+            auto qbslot = PlayerController->QuickBars->PrimaryQuickBar.Slots[i];
+
+            for (int j = 0; j < qbslot.Items.Count; j++)
+            {
+                auto qbguid = qbslot.Items[j];
+
+                if (qbguid == guid)
+                {
+                    slot = i;
+                    primary = true;
+                }
+            }
+
+            if (slot != -1)
+                break;
+        }
+        for (int i = 0; i < PlayerController->QuickBars->SecondaryQuickBar.Slots.Count; i++)
+        {
+            auto qbslot = PlayerController->QuickBars->SecondaryQuickBar.Slots[i];
+
+            for (int j = 0; j < qbslot.Items.Count; j++)
+            {
+                auto qbguid = qbslot.Items[j];
+
+                if (qbguid == guid)
+                {
+                    slot = i;
+                    primary = false;
+                }
+            }
+
+            if (slot != -1)
+                break;
+        }
+
+        if (slot != -1)
+        {
+            PlayerController->QuickBars->ServerRemoveItemInternal(guid, false, true);
+            PlayerController->QuickBars->EmptySlot(primary ? EFortQuickBars::Primary : EFortQuickBars::Secondary, slot);
+            if (primary)
+                PlayerController->QuickBars->PrimaryQuickBar.Slots[slot].Items.FreeArray();
+            else
+                PlayerController->QuickBars->SecondaryQuickBar.Slots[slot].Items.FreeArray();
+        }
+        else
+        {
+            LOG_WARN("Quickbar slot not found in TryDeleteItem");
+        }
+        
+        Update(PlayerController, Index, true);
 
         return success;
     }
@@ -595,7 +649,7 @@ namespace Inventory
                 }
                 else
                 {
-                    if (!TryDeleteItemEntry(PlayerController, i))
+                    if (!TryDeleteItem(PlayerController, i))
                     {
                         LOG_ERROR("Failed to remove item entry {}", i);
                     }
