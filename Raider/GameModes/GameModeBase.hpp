@@ -72,23 +72,34 @@ public:
         // TODO: Figure out cases such as WorldPKG.AthenaLoot.Ammo where NumLootPackageDrops is 1.6
         auto drops = 0;
         for (int j = 0; j < ok.LootPackageCategoryWeightArray.Count; j++)
-            if (ok.LootPackageCategoryWeightArray[j] == 1)
-                drops++;
+        {
+            if (ok.LootPackageCategoryWeightArray[j] != -1)
+            {
+                drops += ((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]);
+            }
+        }
+
+        LOG_INFO("[GetLoot] Drops: {}", drops);
 
         auto ok2 = lpd[ok.LootPackage.ToString()];
         //LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
         for (int j = 0; j < drops; j++)
         {
+            FFortLootPackageData ok3;
             if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
-                continue;
-            auto ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
+                ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageID.ToString()]);
+            else
+                ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
+            
             auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
-            //LOG_INFO("    {}: {}", j, unk.ObjectID.AssetPathName.ToString());
+            
             auto obj = (UFortItemDefinition*)UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
             if (obj)
                 ret.push_back({obj, ok3.Count});
             else
+            {
                 LOG_INFO("Object name \"{}\" was not found", unk.ObjectID.AssetPathName.ToString())
+            }
         }
 
         return ret;

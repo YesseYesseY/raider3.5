@@ -71,23 +71,30 @@ namespace Spawners
 
     static void SummonPickupFromChest(auto ItemDef, int Count, FVector Location)
     {
-        auto FortPickup = SpawnActor<AFortPickup>(Location);
-
-        FortPickup->bReplicates = true; // should be autmoatic but eh
-        FortPickup->bRandomRotation = true;
-
-        FortPickup->PrimaryPickupItemEntry.Count = Count;
-        FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
-        if (ItemDef->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
+        int attempts = 0;
+        for (int i = 0; i < 5; i++)
         {
-            auto weapdef = (UFortWeaponItemDefinition*)ItemDef;
-            
-            FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortRangedWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
-        }
+            auto FortPickup = SpawnActor<AFortPickup>(Location);
+            if (FortPickup)
+            {
+                FortPickup->bReplicates = true; // should be autmoatic but eh
+                FortPickup->bRandomRotation = true;
 
-        FortPickup->OnRep_PrimaryPickupItemEntry();
-        FortPickup->OnRep_TossedFromContainer();
-        FortPickup->TossPickup(Location, nullptr, 6, true);
+                FortPickup->PrimaryPickupItemEntry.Count = Count;
+                FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
+                if (ItemDef->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
+                {
+                    auto weapdef = (UFortWeaponItemDefinition*)ItemDef;
+
+                    FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortRangedWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
+                }
+
+                FortPickup->OnRep_PrimaryPickupItemEntry();
+                FortPickup->OnRep_TossedFromContainer();
+                FortPickup->TossPickup(Location, nullptr, 6, true);
+                break;
+            }
+        }
     }
 
     static void SpawnPickupFromFloorLoot(auto ItemDef, int Count, FVector Location)

@@ -517,9 +517,15 @@ namespace UFunctionHooks
                     {
                         TierGroup = "Loot_AthenaTreasure";
                     }
-                    
+                    else if (TierGroup == "Loot_Ammo")
+                    {
+                        if(GetKismetMath()->STATIC_RandomBool()) // Maybe there's a better way, but i can't fin it rn
+                            TierGroup = "Loot_AthenaAmmoSmall";
+                        else
+                            TierGroup = "Loot_AthenaAmmoLarge";
+                    }
                     auto loot = Game::Mode->GetLoot(TierGroup);
-                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorRightVector() * Container->LootSpawnLocation.Z); // Idk wtf i cooked up here but it works LOL
+                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorRightVector() * 42.0f);
                     for (int i = 0; i < loot.size(); i++)
                     {
                         Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, spawnloc);
