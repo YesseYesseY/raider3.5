@@ -704,11 +704,11 @@ namespace UFunctionHooks
                         LOG_INFO("Found ClassRepNodePolicy for AFortQuickBars! {}", (int)value);
                     }
 
-                    if (key == AFortPickup::StaticClass())
-                    {
-                        value = EClassRepNodeMapping::Spatialize_Static;
-                        LOG_INFO("Found ClassRepNodePolicy for AFortPickup! {}", (int)value);
-                    }
+                    //if (key == AFortPickup::StaticClass())
+                    //{
+                    //    value = EClassRepNodeMapping::Spatialize_Dormancy;
+                    //    LOG_INFO("Found ClassRepNodePolicy for AFortPickup! {}", (int)value);
+                    //}
                 }
 
                 GetWorld()->NetDriver = HostBeacon->NetDriver;

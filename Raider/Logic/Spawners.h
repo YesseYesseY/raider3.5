@@ -85,8 +85,7 @@ namespace Spawners
                 if (ItemDef->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
                 {
                     auto weapdef = (UFortWeaponItemDefinition*)ItemDef;
-
-                    FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortRangedWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
+                    FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortBaseWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
                 }
 
                 FortPickup->OnRep_PrimaryPickupItemEntry();
@@ -110,6 +109,11 @@ namespace Spawners
 
                 FortPickup->PrimaryPickupItemEntry.Count = Count;
                 FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
+                if (ItemDef->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
+                {
+                    auto weapdef = (UFortWeaponItemDefinition*)ItemDef;
+                    FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortBaseWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
+                }
 
                 FortPickup->OnRep_PrimaryPickupItemEntry();
                 FortPickup->TossPickup(Location, nullptr, 6, false);

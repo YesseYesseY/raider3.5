@@ -448,6 +448,7 @@ namespace Inventory
 
         auto& ItemInstances = Controller->WorldInventory->Inventory.ItemInstances;
 
+
         if (Params->Pickup)
         {
             bool bCanGoInSecondary = true; // there is no way this is how you do it // todo: rename
@@ -456,6 +457,17 @@ namespace Inventory
                 bCanGoInSecondary = false;
 
             auto WorldItemDefinition = static_cast<UFortWorldItemDefinition*>(Params->Pickup->PrimaryPickupItemEntry.ItemDefinition);
+
+            int DupItemIndex = -1;
+            for (int i = 0; i < ItemInstances.Count; i++)
+            {
+                if (ItemInstances[i]->ItemEntry.ItemDefinition == WorldItemDefinition)
+                {
+                    DupItemIndex = i;
+                    break;
+                }
+            }
+            LOG_INFO("DupItemIndex: {}", DupItemIndex);
 
             if (!bCanGoInSecondary)
             {
@@ -494,7 +506,8 @@ namespace Inventory
                                 if (FocusedGuid == Guid)
                                 {
                                     // if (Params->Pickup->MultiItemPickupEntries)
-                                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, ItemInstance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
+                                    auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, ItemInstance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
+                                    pickup->PrimaryPickupItemEntry.LoadedAmmo = ItemInstance->GetLoadedAmmo();
                                     break;
                                 }
                             }
@@ -532,10 +545,38 @@ namespace Inventory
                 {
                     if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
                     {
-                        // While combining items isn't implemented, ammo and resources bug out everything
-                        if (!WorldItemDefinition->IsA(UFortResourceItemDefinition::StaticClass()) && !WorldItemDefinition->IsA(UFortAmmoItemDefinition::StaticClass()))
-                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
-                        Params->Pickup->K2_DestroyActor();
+                        FFortItemEntry entry;
+                        if (DupItemIndex != -1)
+                        {
+                            auto newcount = ItemInstances[DupItemIndex]->ItemEntry.Count + Params->Pickup->PrimaryPickupItemEntry.Count;
+                            if (newcount > WorldItemDefinition->MaxStackSize)
+                            {
+                                auto leftover = newcount - WorldItemDefinition->MaxStackSize;
+                                Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
+                                newcount = WorldItemDefinition->MaxStackSize;
+                            }
+
+                            Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry.Count = newcount;
+                            Controller->WorldInventory->Inventory.ReplicatedEntries[DupItemIndex].Count = newcount;
+
+                            Update(Controller, DupItemIndex);
+                            entry = Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry;
+                        }
+                        else
+                        {
+                            entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
+                        }
+                        //Params->Pickup->K2_DestroyActor();
+
+                        // TODO: After leaving a pickup alone for a while the pickup anim stops working, this goes for all pickups including floorloot, chest, etc.
+
+                        Params->Pickup->PickupLocationData.PickupTarget = (AFortPawn*)Controller->Pawn;
+                        Params->Pickup->PickupLocationData.FlyTime = 0.40f;
+                        Params->Pickup->PickupLocationData.ItemOwner = (AFortPawn*)Controller->Pawn;
+                        Params->Pickup->OnRep_PickupLocationData();
+
+                        Params->Pickup->bPickedUp = true;
+                        Params->Pickup->OnRep_bPickedUp();
 
                         break;
                     }
