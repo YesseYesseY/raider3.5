@@ -112,7 +112,7 @@ namespace Spawners
                 FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
 
                 FortPickup->OnRep_PrimaryPickupItemEntry();
-                FortPickup->TossPickup(Location, nullptr, 6, true); // Don't think this is correct it scatters the loot too much, but it's fine for now
+                FortPickup->TossPickup(Location, nullptr, 6, false);
                 break;
             }
         }

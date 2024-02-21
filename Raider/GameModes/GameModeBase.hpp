@@ -159,7 +159,6 @@ public:
 
     void LoadJoiningPlayer(AFortPlayerControllerAthena* Controller)
     {
-
         LOG_INFO("({}) Initializing {} that has just joined!", "GameModeBase", Controller->PlayerState->GetPlayerName().ToString());
 
         auto Pawn = Spawners::SpawnActor<APlayerPawn_Athena_C>(GetPlayerStart(Controller).Translation, Controller, {});
@@ -220,6 +219,45 @@ public:
         auto Drone = Spawners::SpawnActor<ABP_VictoryDrone_C>(Controller->K2_GetActorLocation());
         Drone->InitDrone();
         Drone->TriggerPlayerSpawnEffects();
+
+        if (!bFloortLootSpawned)
+        {
+            InitLoot();
+
+            TArray<AActor*> floots;
+            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_01.Tiered_Athena_FloorLoot_01_C"), &floots);
+            LOG_INFO("Found {} floor loot spots", floots.Count);
+            for (int i = 0; i < floots.Count; i++)
+            {
+                auto floot = (ABuildingContainer*)floots[i];
+
+                auto loot = GetLoot("Loot_AthenaFloorLoot");
+                for (int j = 0; j < loot.size(); j++)
+                {
+                    auto Location = floot->K2_GetActorLocation();
+                    //Location.Z += 42; // scuffed but it worked for chests
+
+                    Spawners::SpawnPickupFromFloorLoot(loot[j].ItemDef, loot[j].Count, Location);
+                }
+            }
+            floots.FreeArray();
+            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_Warmup.Tiered_Athena_FloorLoot_Warmup_C"), &floots);
+            LOG_INFO("Found {} warmup floor loot spots", floots.Count);
+            for (int i = 0; i < floots.Count; i++)
+            {
+                auto floot = (ABuildingContainer*)floots[i];
+
+                auto loot = GetLoot("Loot_AthenaFloorLoot_Warmup");
+                for (int j = 0; j < loot.size(); j++)
+                {
+                    auto Location = floot->K2_GetActorLocation();
+                    Location.Z += 42; // scuffed but it worked for chests
+
+                    Spawners::SpawnPickupFromFloorLoot(loot[j].ItemDef, loot[j].Count, Location);
+                }
+            }
+            floots.FreeArray();
+        }
 
         OnPlayerJoined(Controller);
     }
@@ -349,7 +387,7 @@ private:
     bool bRespawnEnabled = false;
     bool bRegenEnabled = false;
     bool bRejoinEnabled = false;
-
+    bool bFloortLootSpawned = false;
     // Looting stuff
     std::map<std::string, std::vector<FFortLootTierData>> ltd;
     std::map<std::string, std::vector<FFortLootPackageData>> lpd;
