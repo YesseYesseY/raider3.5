@@ -80,4 +80,19 @@ namespace Game
 
         return EDeathCause::Unspecified;
     }
+
+    // Can't be in utils 
+    static UFortResourceItemDefinition* EFortResourceTypeToItemDef(EFortResourceType ResourceType)
+    {
+        UFortResourceItemDefinition* ret = nullptr;
+        if (ResourceType == EFortResourceType::Wood)
+            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->WoodItemDefinition;
+        else if (ResourceType == EFortResourceType::Stone)
+            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->StoneItemDefinition;
+        else if (ResourceType == EFortResourceType::Metal)
+            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->MetalItemDefinition;
+        else if (ResourceType == EFortResourceType::Permanite)
+            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->PermaniteItemDefinition;
+        return ret;
+    }
 }

@@ -172,14 +172,7 @@ namespace UFunctionHooks
                     auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
                     BuildingActor->Team = PlayerState->TeamIndex;
 
-                    UFortResourceItemDefinition* matdef = nullptr;
-
-                    if (BuildingActor->ResourceType == EFortResourceType::Wood)
-                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->WoodItemDefinition;
-                    else if (BuildingActor->ResourceType == EFortResourceType::Stone)
-                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->StoneItemDefinition;
-                    else if (BuildingActor->ResourceType == EFortResourceType::Metal)
-                        matdef = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->MetalItemDefinition;
+                    UFortResourceItemDefinition* matdef = Game::EFortResourceTypeToItemDef(BuildingActor->ResourceType);
                     
                     if (!Inventory::TryRemoveItem(PC, matdef, 10))
                     {
@@ -429,7 +422,14 @@ namespace UFunctionHooks
 
             if (Controller && Pawn && Params->BuildingActorToRepair)
             {
-                Params->BuildingActorToRepair->RepairBuilding(Controller, 50); // TODO: Figure out how to get the repair amount
+                auto HealthPercent = Params->BuildingActorToRepair->GetHealthPercent();
+                // 0.75 is from DefaultGameData. This could be gotten at runtime but... it's the same for all materials so it doesn't matter
+                auto Cost = floor(((1 - HealthPercent) * 0.75) * 10);
+                Params->BuildingActorToRepair->RepairBuilding(Controller, Cost);
+                if (!Inventory::TryRemoveItem(Controller, Game::EFortResourceTypeToItemDef(Params->BuildingActorToRepair->ResourceType), Cost))
+                {
+                    LOG_ERROR("Failed to remove resource after repair")
+                }
             }
 
             return false;

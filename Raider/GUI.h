@@ -150,8 +150,19 @@ namespace GUI
                             Game::Mode->InitLoot();
                         }
 
-                        if (ZeroGUI::Button(L"Test Loot", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Test", FVector2D { 100, 25 }))
                         {
+                            for (int i = 0; i < 4; i++)
+                            {
+                                if (static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->BuildingRepairCostMultiplierHandles[i].CurveTable)
+                                {
+                                    LOG_INFO("{}: {}", i, static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->BuildingRepairCostMultiplierHandles[i].CurveTable->GetFullName());
+                                }
+                                else
+                                {
+                                    LOG_INFO("{}, NULL", i);
+                                }
+                            }
                         }
                         break;
                     }
