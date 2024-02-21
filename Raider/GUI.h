@@ -101,6 +101,24 @@ namespace GUI
                                 
                                 Game::Mode->InitLoot();
 
+                                TArray<AActor*> floots;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_01.Tiered_Athena_FloorLoot_01_C"), &floots);
+                                LOG_INFO("Found {} floor loot spots", floots.Count);
+                                for (int i = 0; i < floots.Count; i++)
+                                {
+                                    auto floot = (ABuildingContainer*)floots[i];
+
+                                    auto loot = Game::Mode->GetLoot("Loot_AthenaFloorLoot");
+                                    for (int j = 0; j < loot.size(); j++)
+                                    {
+                                        auto Location = floot->K2_GetActorLocation();
+                                        Location.Z += 42; // scuffed but it worked for chests
+
+                                        Spawners::SpawnPickupFromFloorLoot(loot[j].ItemDef, loot[j].Count, Location);
+                                    }
+                                }
+                                floots.FreeArray();
+
                                 //auto wood = UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData");
                                 //auto pump = UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition WID_Shotgun_Standard_Athena_UC_Ore_T03.WID_Shotgun_Standard_Athena_UC_Ore_T03");
                                 
@@ -152,17 +170,6 @@ namespace GUI
 
                         if (ZeroGUI::Button(L"Test", FVector2D { 100, 25 }))
                         {
-                            for (int i = 0; i < 4; i++)
-                            {
-                                if (static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->BuildingRepairCostMultiplierHandles[i].CurveTable)
-                                {
-                                    LOG_INFO("{}: {}", i, static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->BuildingRepairCostMultiplierHandles[i].CurveTable->GetFullName());
-                                }
-                                else
-                                {
-                                    LOG_INFO("{}, NULL", i);
-                                }
-                            }
                         }
                         break;
                     }

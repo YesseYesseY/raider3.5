@@ -79,8 +79,6 @@ public:
             }
         }
 
-        LOG_INFO("[GetLoot] Drops: {}", drops);
-
         auto ok2 = lpd[ok.LootPackage.ToString()];
         //LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
         for (int j = 0; j < drops; j++)

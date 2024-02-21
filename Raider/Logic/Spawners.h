@@ -99,14 +99,23 @@ namespace Spawners
 
     static void SpawnPickupFromFloorLoot(auto ItemDef, int Count, FVector Location)
     {
-        auto FortPickup = SpawnActor<AFortPickup>(Location);
+        int attempts = 0;
+        for (int i = 0; i < 5; i++)
+        {
+            auto FortPickup = SpawnActor<AFortPickup>(Location);
 
-        FortPickup->bReplicates = true; // should be autmoatic but eh
+            if (FortPickup)
+            {
+                FortPickup->bReplicates = true; // should be autmoatic but eh
 
-        FortPickup->PrimaryPickupItemEntry.Count = Count;
-        FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
+                FortPickup->PrimaryPickupItemEntry.Count = Count;
+                FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
 
-        FortPickup->OnRep_PrimaryPickupItemEntry();
+                FortPickup->OnRep_PrimaryPickupItemEntry();
+                FortPickup->TossPickup(Location, nullptr, 6, true); // Don't think this is correct it scatters the loot too much, but it's fine for now
+                break;
+            }
+        }
     }
 
     static void SpawnDeco(AFortDecoTool* Tool, void* _Params)
