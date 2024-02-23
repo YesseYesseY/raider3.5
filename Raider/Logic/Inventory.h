@@ -775,6 +775,6 @@ namespace Inventory
         AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
         EquipInventoryItem(PlayerController, pick.ItemGuid);
 
-        //PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
+        PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
     }
 }

@@ -393,6 +393,22 @@ namespace UFunctionHooks
             return false;
         })
 
+        DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
+            auto Pawn = (AFortPlayerPawnAthena*)Object;
+            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+            {
+                auto Pickup = (AFortPickup*)Params->OtherActor;
+
+                if (Pickup->bWeaponsCanBeAutoPickups)
+                {
+                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+                }
+            }
+
+            return false;
+        })
+
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerEndEditingBuildingActor", {
             auto Params = (AFortPlayerController_ServerEndEditingBuildingActor_Params*)Parameters;
             auto PC = (AFortPlayerControllerAthena*)Object;

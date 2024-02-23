@@ -3,7 +3,7 @@
 #include "GUI.h"
 #include "UFunctionHooks.h"
 
-//#define LOGGING
+#define LOGGING
 
 namespace Hooks
 {

@@ -6,7 +6,7 @@
 #include "Logger.hpp"
 #include "ufunctionhooks.h"
 
-//#define REDIRECT_FORTNITE_LOGS
+#define REDIRECT_FORTNITE_LOGS
 
 DWORD WINAPI Main(LPVOID lpParam)
 {
