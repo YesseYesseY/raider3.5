@@ -409,6 +409,21 @@ namespace UFunctionHooks
             return false;
         })
 
+        DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
+            auto Build = (ABuildingActor*)Object;
+            auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
+            if (Build->IsA(ABuildingSMActor::StaticClass()))
+            {
+                auto BuildSM = (ABuildingSMActor*)Object;
+                auto MatDef = Game::EFortResourceTypeToItemDef(BuildSM->ResourceType.GetValue());
+                auto MatCount = floor(Params->Damage / 10);
+                auto Pawn = (AFortPlayerPawnAthena*)Params->InstigatedBy->Pawn;
+                auto Pickup = Spawners::SummonPickup(Pawn, MatDef, MatCount, Pawn->K2_GetActorLocation());
+                Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+            }
+            return false;
+        })
+
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerEndEditingBuildingActor", {
             auto Params = (AFortPlayerController_ServerEndEditingBuildingActor_Params*)Parameters;
             auto PC = (AFortPlayerControllerAthena*)Object;
