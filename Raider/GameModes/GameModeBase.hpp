@@ -105,9 +105,35 @@ public:
 
     void InitLoot()
     {
+        UDataTable* loottierdata = nullptr;
+        UDataTable* lootpackage = nullptr;
         // TODO: Get datatables from playlist?
-        auto loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
-        auto lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
+        bool gotdata = false;
+        bool gotpack = false;
+        if (this->BasePlaylist) // Idk if this works
+        {
+
+            auto PlaylistLtd = this->BasePlaylist->LootTierData.WeakPtr.Get();
+            auto PlaylistLpd = this->BasePlaylist->LootPackages.WeakPtr.Get();
+
+            if (PlaylistLtd)
+            {
+                loottierdata = (UDataTable*)PlaylistLtd;
+                gotdata = true;
+            }
+            if (PlaylistLpd)
+            {
+                lootpackage = (UDataTable*)PlaylistLpd;
+                gotpack = true;
+            }
+        }
+        if (!gotdata || !gotpack)
+        {
+            LOG_WARN("Failed to get LootTierData and LootPackages from playlist\ngotdata: {}\ngotpack: {}", gotdata, gotpack);
+            loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
+            lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
+        }
+        
         if (loottierdata)
         {
             for (auto Pair : loottierdata->RowMap)
@@ -117,6 +143,7 @@ public:
                 this->ltd[row.TierGroup.ToString()].push_back(row);
             }
         }
+
         if (lootpackage)
         {
 
@@ -213,6 +240,7 @@ public:
         }
 
         Inventory::Init(Controller);
+        Inventory::Update(Controller);
         //Inventory::EquipLoadout(Controller, this->GetPlaylistLoadout()); // TODO: Make this better
         Abilities::ApplyAbilities(Pawn);
 

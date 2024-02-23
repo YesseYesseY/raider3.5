@@ -33,15 +33,21 @@ namespace Spawners
     }
 
     template <typename RetActorType = AActor>
-    static RetActorType* SpawnActor(FVector Location = { 0.0f, 0.0f, 0.0f }, AActor* Owner = nullptr, FQuat Rotation = { 0, 0, 0 }, ESpawnActorCollisionHandlingMethod Flags = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn)
+    static RetActorType* SpawnActor(FVector Location = { 0.0f, 0.0f, 0.0f }, AActor* Owner = nullptr, FQuat Rotation = { 0, 0, 0 }, ESpawnActorCollisionHandlingMethod Flags = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn, bool attempts = 10)
     {
         FTransform SpawnTransform;
 
         SpawnTransform.Translation = Location;
         SpawnTransform.Scale3D = FVector { 1, 1, 1 };
         SpawnTransform.Rotation = Rotation;
-
-        return static_cast<RetActorType*>(SpawnActor(RetActorType::StaticClass(), SpawnTransform, Owner, Flags));
+        
+        for (int i = 0; i < attempts; i++)
+        {
+            auto ret = static_cast<RetActorType*>(SpawnActor(RetActorType::StaticClass(), SpawnTransform, Owner, Flags));
+            if (ret)
+                return ret;
+        }
+        return nullptr;
     }
 
     static ABuildingSMActor* SpawnBuilding(UClass* BGAClass, FVector& Location, FRotator& Rotation, APlayerPawn_Athena_C* Pawn)

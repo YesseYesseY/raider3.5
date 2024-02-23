@@ -439,6 +439,18 @@ namespace Inventory
         return bWasSuccessful;
     }
 
+    inline void PickupAnim(AFortPawn* Pawn, AFortPickup* Pickup)
+    {
+        Pickup->ForceNetUpdate();
+        Pickup->PickupLocationData.PickupTarget = Pawn;
+        Pickup->PickupLocationData.FlyTime = 0.40f;
+        Pickup->PickupLocationData.ItemOwner = Pawn;
+        Pickup->OnRep_PickupLocationData();
+
+        Pickup->bPickedUp = true;
+        Pickup->OnRep_bPickedUp();
+    }
+
     inline void OnPickup(AFortPlayerControllerAthena* Controller, void* params)
     {
         auto Params = static_cast<AFortPlayerPawn_ServerHandlePickup_Params*>(params);
@@ -518,14 +530,9 @@ namespace Inventory
                         int Idx = 0;
                         auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
                         // auto& Entry = Controller->WorldInventory->Inventory.ReplicatedEntries[Idx];
+                        
                         auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
-                        Params->Pickup->PickupLocationData.PickupTarget = (AFortPawn*)Controller->Pawn;
-                        Params->Pickup->PickupLocationData.FlyTime = 0.40f;
-                        Params->Pickup->PickupLocationData.ItemOwner = (AFortPawn*)Controller->Pawn;
-                        Params->Pickup->OnRep_PickupLocationData();
-
-                        Params->Pickup->bPickedUp = true;
-                        Params->Pickup->OnRep_bPickedUp();
+                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup);
 
                         Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
                         Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
@@ -566,17 +573,8 @@ namespace Inventory
                         {
                             entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
                         }
-                        //Params->Pickup->K2_DestroyActor();
-
-                        // TODO: After leaving a pickup alone for a while the pickup anim stops working, this goes for all pickups including floorloot, chest, etc.
-
-                        Params->Pickup->PickupLocationData.PickupTarget = (AFortPawn*)Controller->Pawn;
-                        Params->Pickup->PickupLocationData.FlyTime = 0.40f;
-                        Params->Pickup->PickupLocationData.ItemOwner = (AFortPawn*)Controller->Pawn;
-                        Params->Pickup->OnRep_PickupLocationData();
-
-                        Params->Pickup->bPickedUp = true;
-                        Params->Pickup->OnRep_bPickedUp();
+                        
+                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup);
 
                         break;
                     }
@@ -732,7 +730,7 @@ namespace Inventory
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Floor.BuildingItemData_Floor"),
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Stair_W.BuildingItemData_Stair_W"),
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_RoofS.BuildingItemData_RoofS"),
-            UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool"),
+            //UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool"),
 
             UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Launch_Pad_Athena.TID_Floor_Player_Launch_Pad_Athena"),
             UObject::FindObject<UFortContextTrapItemDefinition>("FortContextTrapItemDefinition TID_ContextTrap_Athena.TID_ContextTrap_Athena"),
@@ -773,8 +771,8 @@ namespace Inventory
 
         AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
 
-        //static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
-        //AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
+        static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
+        AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
 
         //PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
     }
