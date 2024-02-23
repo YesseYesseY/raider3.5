@@ -240,7 +240,7 @@ namespace SDK
             return ComparisonIndex != Other.ComparisonIndex;
         }
 
-        std::wstring ToWString()
+        std::wstring ToWString(bool includeSlash = false)
         {
             if (!this)
                 return L"";
@@ -253,6 +253,8 @@ namespace SDK
 
             FMemory_Free((void*)temp.c_str());
 
+            if (includeSlash)
+                return wName;
             auto pos = wName.rfind('/');
             if (pos == std::wstring::npos)
             {

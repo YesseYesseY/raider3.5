@@ -769,10 +769,11 @@ namespace Inventory
             Slot++;
         }
 
-        AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
+        auto pick = AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
 
         static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
         AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
+        EquipInventoryItem(PlayerController, pick.ItemGuid);
 
         //PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
     }

@@ -39,4 +39,5 @@ namespace Patterns
     
     // L"Failed to remove item %s during reload, item duplicated!"
     constexpr const char* ReloadThing = "89 54 24 ? 55 41 56 48 8D 6C 24 ? 48 81 EC ? ? ? ? 80 B9";
+    constexpr const char* StaticLoadObject = "4C 89 4C 24 ? 48 89 54 24 ? 48 89 4C 24 ? 55 53 56 57 48 8D 6C 24 ? 48 81 EC ? ? ? ? 33 D2";
 }

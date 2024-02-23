@@ -98,6 +98,11 @@ namespace Native
         inline void (*PostRender)(UGameViewportClient* _this, UCanvas* Canvas);
     }
 
+    namespace Static
+    {
+        inline UObject* (*StaticLoadObjectInternal)(UClass* a1, UObject* a2, const wchar_t* a3, const wchar_t* a4, unsigned int a5, UPackageMap* a6, bool a7);
+    }
+
     void InitializeAll()
     {
         Imagebase = (uintptr_t)GetModuleHandleA(nullptr);
@@ -201,6 +206,10 @@ namespace Native
         Address = Utils::FindPattern(Patterns::ReloadThing);
         CheckNullFatal(Address, "Failed to find ReloadThing");
         AddressToFunction(Address, Inventory::ReloadThing);
+
+        Address = Utils::FindPattern(Patterns::StaticLoadObject);
+        CheckNullFatal(Address, "Failed to find StaticLoadObject");
+        AddressToFunction(Address, Static::StaticLoadObjectInternal);
 
         ProcessEvent = reinterpret_cast<decltype(ProcessEvent)>(GetEngine()->Vtable[0x40]);
     }

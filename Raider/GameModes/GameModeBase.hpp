@@ -219,24 +219,27 @@ public:
         PlayerState->OnRep_bHasStartedPlaying();
 
         static auto FortRegisteredPlayerInfo = ((UFortGameInstance*)GetWorld()->OwningGameInstance)->RegisteredPlayers[0]; // UObject::FindObject<UFortRegisteredPlayerInfo>("FortRegisteredPlayerInfo Transient.FortEngine_0_1.FortGameInstance_0_1.FortRegisteredPlayerInfo_0_1");
+        static auto RandomCharacters = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->AthenaGameData->RandomCharacters;
 
-        if (FortRegisteredPlayerInfo)
+        UAthenaCharacterItemDefinition* CharDef = RandomCharacters[GetKismetMath()->STATIC_RandomIntegerInRange(0, RandomCharacters.Count - 1)];
+        Controller->CustomizationLoadout.Character = CharDef;
+        // This is actually unreadable lol
+        auto HeroType =  *(UFortHeroType**)((uintptr_t)CharDef + 0x0358);
+        auto Specialization = (UFortHeroSpecialization*)(*(TArray<TSoftObjectPtr<UFortHeroSpecialization*>>*)(&HeroType->UnknownData01))[0].WeakPtr.Get();
+        auto CharacterParts = *(TArray<TSoftObjectPtr<UObject*>>*)(&Specialization->UnknownData01);
+
+        if (HeroType)
         {
-            auto Hero = FortRegisteredPlayerInfo->AthenaMenuHeroDef;
-
-            if (Hero)
+            PlayerState->HeroType = HeroType;
+            PlayerState->OnRep_HeroType();
+            
+            for (int i = 0; i < CharacterParts.Count; i++)
             {
-                UFortHeroType* HeroType = Hero->GetHeroTypeBP(); // UObject::FindObject<UFortHeroType>("FortHeroType HID_Outlander_015_F_V1_SR_T04.HID_Outlander_015_F_V1_SR_T04");
-                PlayerState->HeroType = HeroType;
-                PlayerState->OnRep_HeroType();
-
-                static auto Head = UObject::FindObject<UCustomCharacterPart>("CustomCharacterPart F_Med_Head1.F_Med_Head1");
-                static auto Body = UObject::FindObject<UCustomCharacterPart>("CustomCharacterPart F_Med_Soldier_01.F_Med_Soldier_01");
-
-                PlayerState->CharacterParts[(uint8_t)EFortCustomPartType::Head] = Head;
-                PlayerState->CharacterParts[(uint8_t)EFortCustomPartType::Body] = Body;
-                PlayerState->OnRep_CharacterParts();
+                auto part = Spawners::LoadObject<UCustomCharacterPart>(UCustomCharacterPart::StaticClass(), CharacterParts[i].ObjectID.AssetPathName.ToWString(true).c_str());
+                PlayerState->CharacterParts[(uint8_t)part->CharacterPartType.GetValue()] = part;
             }
+            
+            PlayerState->OnRep_CharacterParts();
         }
 
         Inventory::Init(Controller);
@@ -384,21 +387,26 @@ public:
         Pawn->bReplicateMovement = true;
         Pawn->OnRep_ReplicateMovement();
 
-        static auto FortRegisteredPlayerInfo = static_cast<UFortGameInstance*>(GetWorld()->OwningGameInstance)->RegisteredPlayers[0]; // UObject::FindObject<UFortRegisteredPlayerInfo>("FortRegisteredPlayerInfo Transient.FortEngine_0_1.FortGameInstance_0_1.FortRegisteredPlayerInfo_0_1");
+        UAthenaCharacterItemDefinition* CharDef = PlayerController->CustomizationLoadout.Character; // RandomCharacters[GetKismetMath()->STATIC_RandomIntegerInRange(0, RandomCharacters.Count - 1)];
+        
+        // This is actually unreadable lol
+        auto HeroType = *(UFortHeroType**)((uintptr_t)CharDef + 0x0358);
+        auto Specialization = (UFortHeroSpecialization*)(*(TArray<TSoftObjectPtr<UFortHeroSpecialization*>>*)(&HeroType->UnknownData01))[0].WeakPtr.Get();
+        auto CharacterParts = *(TArray<TSoftObjectPtr<UObject*>>*)(&Specialization->UnknownData01);
 
-        if (bResetCharacterParts && FortRegisteredPlayerInfo)
+        if (HeroType)
         {
-            auto PlayerState = static_cast<AFortPlayerStateAthena*>(PlayerController->PlayerState);
-            static auto Hero = FortRegisteredPlayerInfo->AthenaMenuHeroDef;
-
-            PlayerState->HeroType = Hero->GetHeroTypeBP();
+            auto PlayerState = (AFortPlayerStateAthena*)PlayerController->PlayerState;
+            PlayerState->HeroType = HeroType;
             PlayerState->OnRep_HeroType();
 
-            static auto Head = UObject::FindObject<UCustomCharacterPart>("CustomCharacterPart F_Med_Head1.F_Med_Head1");
-            static auto Body = UObject::FindObject<UCustomCharacterPart>("CustomCharacterPart F_Med_Soldier_01.F_Med_Soldier_01");
+            for (int i = 0; i < CharacterParts.Count; i++)
+            {
+                auto part = Spawners::LoadObject<UCustomCharacterPart>(UCustomCharacterPart::StaticClass(), CharacterParts[i].ObjectID.AssetPathName.ToWString(true).c_str());
+                PlayerState->CharacterParts[(uint8_t)part->CharacterPartType.GetValue()] = part;
+            }
 
-            PlayerState->CharacterParts[static_cast<uint8_t>(EFortCustomPartType::Head)] = Head;
-            PlayerState->CharacterParts[static_cast<uint8_t>(EFortCustomPartType::Body)] = Body;
+            PlayerState->OnRep_CharacterParts();
         }
 
         Inventory::Update(PlayerController);

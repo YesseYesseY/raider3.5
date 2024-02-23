@@ -4,6 +4,12 @@
 
 namespace Spawners
 {
+    template <typename T = UObject>
+    static T* LoadObject(UClass* Class, const wchar_t* Name)
+    {
+        return (T*)Native::Static::StaticLoadObjectInternal(Class, nullptr, Name, nullptr, 0, nullptr, false);
+    }
+
     static AActor* SpawnActor(UClass* StaticClass, FTransform SpawnTransform, AActor* Owner = nullptr, ESpawnActorCollisionHandlingMethod Flags = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn)
     {
         AActor* FirstActor = GetGameplayStatics()->STATIC_BeginDeferredActorSpawnFromClass(GetWorld(), StaticClass, SpawnTransform, Flags, Owner);
