@@ -96,26 +96,34 @@ namespace Abilities
     {
         auto Pawn = (APlayerPawn_Athena_C*)_Pawn;
 
-        static auto SprintAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Sprint");
-        static auto ReloadAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Reload");
-        static auto RangedWeaponAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_RangedWeapon");
-        static auto JumpAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Jump");
-        static auto DeathAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_Death.GA_DefaultPlayer_Death_C");
-        static auto InteractUseAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_InteractUse.GA_DefaultPlayer_InteractUse_C");
-        static auto InteractSearchAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_InteractSearch.GA_DefaultPlayer_InteractSearch_C");
-        static auto EmoteAbility = UObject::FindClass("BlueprintGeneratedClass GAB_Emote_Generic.GAB_Emote_Generic_C");
-        static auto TrapAbility = UObject::FindClass("BlueprintGeneratedClass GA_TrapBuildGeneric.GA_TrapBuildGeneric_C");
-        static auto DanceGrenadeAbility = UObject::FindClass("BlueprintGeneratedClass GA_DanceGrenade_Stun.GA_DanceGrenade_Stun_C");
+        auto GAS_DefaultPlayer = UObject::FindObject<UFortAbilitySet>("FortAbilitySet GAS_DefaultPlayer.GAS_DefaultPlayer");
+        for (int i = 0; i < GAS_DefaultPlayer->GameplayAbilities.Count; i++)
+        {
+            auto Ability = GAS_DefaultPlayer->GameplayAbilities[i];
+            if (Ability)
+                GrantGameplayAbility(Pawn, Ability);
+        }
 
-        GrantGameplayAbility(Pawn, SprintAbility);
-        GrantGameplayAbility(Pawn, ReloadAbility);
-        GrantGameplayAbility(Pawn, RangedWeaponAbility);
-        GrantGameplayAbility(Pawn, JumpAbility);
-        GrantGameplayAbility(Pawn, DeathAbility);
-        GrantGameplayAbility(Pawn, InteractUseAbility);
-        GrantGameplayAbility(Pawn, InteractSearchAbility);
-        GrantGameplayAbility(Pawn, EmoteAbility);
-        GrantGameplayAbility(Pawn, TrapAbility);
-        GrantGameplayAbility(Pawn, DanceGrenadeAbility);
+        //static auto SprintAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Sprint");
+        //static auto ReloadAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Reload");
+        //static auto RangedWeaponAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_RangedWeapon");
+        //static auto JumpAbility = UObject::FindClass("Class FortniteGame.FortGameplayAbility_Jump");
+        //static auto DeathAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_Death.GA_DefaultPlayer_Death_C");
+        //static auto InteractUseAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_InteractUse.GA_DefaultPlayer_InteractUse_C");
+        //static auto InteractSearchAbility = UObject::FindClass("BlueprintGeneratedClass GA_DefaultPlayer_InteractSearch.GA_DefaultPlayer_InteractSearch_C");
+        //static auto EmoteAbility = UObject::FindClass("BlueprintGeneratedClass GAB_Emote_Generic.GAB_Emote_Generic_C");
+        //static auto TrapAbility = UObject::FindClass("BlueprintGeneratedClass GA_TrapBuildGeneric.GA_TrapBuildGeneric_C");
+        //static auto DanceGrenadeAbility = UObject::FindClass("BlueprintGeneratedClass GA_DanceGrenade_Stun.GA_DanceGrenade_Stun_C");
+
+        //GrantGameplayAbility(Pawn, SprintAbility);
+        //GrantGameplayAbility(Pawn, ReloadAbility);
+        //GrantGameplayAbility(Pawn, RangedWeaponAbility);
+        //GrantGameplayAbility(Pawn, JumpAbility);
+        //GrantGameplayAbility(Pawn, DeathAbility);
+        //GrantGameplayAbility(Pawn, InteractUseAbility);
+        //GrantGameplayAbility(Pawn, InteractSearchAbility);
+        //GrantGameplayAbility(Pawn, EmoteAbility);
+        //GrantGameplayAbility(Pawn, TrapAbility);
+        //GrantGameplayAbility(Pawn, DanceGrenadeAbility);
     }
 }

@@ -213,7 +213,7 @@ public:
         }
 
         Inventory::Init(Controller);
-        Inventory::EquipLoadout(Controller, this->GetPlaylistLoadout());
+        //Inventory::EquipLoadout(Controller, this->GetPlaylistLoadout()); // TODO: Make this better
         Abilities::ApplyAbilities(Pawn);
 
         auto Drone = Spawners::SpawnActor<ABP_VictoryDrone_C>(Controller->K2_GetActorLocation());

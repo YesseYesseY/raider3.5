@@ -719,15 +719,22 @@ namespace Inventory
         PlayerController->QuickBars = Spawners::SpawnActor<AFortQuickBars>({ -280, 400, 3000 }, PlayerController);
         PlayerController->OnRep_QuickBar();
 
+        // Fixes "Backpack is full" when holding pickaxe
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 0);
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 1);
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 2);
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 3);
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 4);
+        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 5);
+        
         static std::vector<UFortWorldItemDefinition*> Items = {
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Wall.BuildingItemData_Wall"),
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Floor.BuildingItemData_Floor"),
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Stair_W.BuildingItemData_Stair_W"),
             UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_RoofS.BuildingItemData_RoofS"),
+            UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool"),
 
             UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Launch_Pad_Athena.TID_Floor_Player_Launch_Pad_Athena"),
-            /*UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Wall_Electric_Athena_R_T03.TID_Wall_Electric_Athena_R_T03"),
-            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Spikes_Athena_R_T03.TID_Floor_Spikes_Athena_R_T03"),*/
             UObject::FindObject<UFortContextTrapItemDefinition>("FortContextTrapItemDefinition TID_ContextTrap_Athena.TID_ContextTrap_Athena"),
             UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Campfire_Athena.TID_Floor_Player_Campfire_Athena"),
 
@@ -764,9 +771,11 @@ namespace Inventory
             Slot++;
         }
 
-        static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
-        AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
+        AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
 
-        PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
+        //static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
+        //AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
+
+        //PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
     }
 }

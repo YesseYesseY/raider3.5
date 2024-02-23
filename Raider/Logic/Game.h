@@ -46,6 +46,7 @@ namespace Game
         GameState->bReplicatedHasBegunPlay = true;
         GameState->OnRep_ReplicatedHasBegunPlay();
         GameMode->StartMatch();
+        GameMode->bWorldIsReady = true;
     }
 
     auto GetDeathCause(FFortPlayerDeathReport DeathReport)
