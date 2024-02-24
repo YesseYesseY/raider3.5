@@ -712,6 +712,91 @@ namespace Inventory
         return success;
     }
 
+    static void DumpInventory(AFortPlayerControllerAthena* PlayerController)
+    {
+        LOG_INFO("Dumping ({})", PlayerController->PlayerState->GetPlayerName().ToString());
+        LOG_INFO("ItemInstances:");
+
+        for (int i = 0; i < PlayerController->WorldInventory->Inventory.ItemInstances.Count; i++)
+        {
+            auto iteminstance = PlayerController->WorldInventory->Inventory.ItemInstances[i];
+            if (!iteminstance)
+            {
+                LOG_INFO("Item {}: (Empty)", i);
+                continue;
+            }
+
+            LOG_INFO("Item {}:", i);
+            LOG_INFO("    Count: {}", iteminstance->ItemEntry.Count);
+            LOG_INFO("    Ammo: {}", iteminstance->ItemEntry.LoadedAmmo);
+            LOG_INFO("    ItemDef: {}", iteminstance->ItemEntry.ItemDefinition->GetFullName());
+            LOG_INFO("    GUID: ({},{},{},{})", iteminstance->ItemEntry.ItemGuid.A, iteminstance->ItemEntry.ItemGuid.B, iteminstance->ItemEntry.ItemGuid.C, iteminstance->ItemEntry.ItemGuid.D);
+        }
+
+        LOG_INFO("PrimaryQuickbar:");
+        for (int i = 0; i < PlayerController->QuickBars->PrimaryQuickBar.Slots.Count; i++)
+        {
+            auto slot = PlayerController->QuickBars->PrimaryQuickBar.Slots[i];
+
+            LOG_INFO("Slot {}:", i, slot.Items.Count);
+            LOG_INFO("    Enabled: {}", slot.bEnabled);
+            if (slot.Items.Count <= 0)
+            {
+                LOG_INFO("    Items: (Empty)");
+                continue;
+            }
+
+            LOG_INFO("    Items:");
+            for (int j = 0; j < slot.Items.Count; j++)
+            {
+                auto item = slot.Items[j];
+                LOG_INFO("        {}: ({},{},{},{})", j, item.A, item.B, item.C, item.D);
+            }
+        }
+
+        LOG_INFO("SecondaryQuickBar:");
+        for (int i = 0; i < PlayerController->QuickBars->SecondaryQuickBar.Slots.Count; i++)
+        {
+            auto slot = PlayerController->QuickBars->SecondaryQuickBar.Slots[i];
+
+            LOG_INFO("Slot {}:", i, slot.Items.Count);
+            LOG_INFO("    Enabled: {}", slot.bEnabled);
+            if (slot.Items.Count <= 0)
+            {
+                LOG_INFO("    Items: (Empty)");
+                continue;
+            }
+
+            LOG_INFO("    Items:");
+            for (int j = 0; j < slot.Items.Count; j++)
+            {
+                auto item = slot.Items[j];
+                LOG_INFO("        {}: ({},{},{},{})", j, item.A, item.B, item.C, item.D);
+            }
+        }
+    }
+
+    static void EmptyInventory(AFortPlayerControllerAthena* PlayerController)
+    {
+        int i = 0;
+        while (i < PlayerController->WorldInventory->Inventory.ItemInstances.Count)
+        {
+            auto ItemInstance = PlayerController->WorldInventory->Inventory.ItemInstances[i];
+            auto ItemDef = ItemInstance->ItemEntry.ItemDefinition;
+
+            if (!ItemDef->IsA(UFortEditToolItemDefinition::StaticClass()) && !ItemDef->IsA(UFortWeaponMeleeItemDefinition::StaticClass()) && !ItemDef->IsA(UFortBuildingItemDefinition::StaticClass()))
+            {
+                TryDeleteItem(PlayerController, i);
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        Update(PlayerController, 0, true);
+    }
+
     static void Init(AFortPlayerControllerAthena* PlayerController)
     {
         PlayerController->QuickBars = Spawners::SpawnActor<AFortQuickBars>({ -280, 400, 3000 }, PlayerController);
@@ -771,7 +856,7 @@ namespace Inventory
 
         auto pick = AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
 
-        static UFortAmmoItemDefinition* EditTool = UObject::FindObject<UFortAmmoItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
+        static UFortEditToolItemDefinition* EditTool = UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
         AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
         EquipInventoryItem(PlayerController, pick.ItemGuid);
 

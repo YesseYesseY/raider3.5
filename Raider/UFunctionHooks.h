@@ -161,7 +161,7 @@ namespace UFunctionHooks
                 //        BuildingActor->SilentDie();
                 //    }
                 //}
-
+                
                 auto BuildingActor = (ABuildingSMActor*)Spawners::SpawnActor(CurrentBuildClass, Params->BuildLoc, Params->BuildRot, PC, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
                 if (BuildingActor && CanBuild(BuildingActor))
                 {
@@ -393,26 +393,24 @@ namespace UFunctionHooks
             return false;
         })
 
-        // TODO: Make this thing not suck
-        DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
-            auto Pawn = (AFortPlayerPawnAthena*)Object;
-            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
-            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
-            {
-                auto Pickup = (AFortPickup*)Params->OtherActor;
+        //// TODO: Make this thing not suck
+        //DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
+        //    auto Pawn = (AFortPlayerPawnAthena*)Object;
+        //    auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+        //    if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+        //    {
+        //        auto Pickup = (AFortPickup*)Params->OtherActor;
 
-                if (Pickup->bWeaponsCanBeAutoPickups)
-                {
-                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
-                }
-            }
+        //        if (Pickup->bWeaponsCanBeAutoPickups)
+        //        {
+        //            Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+        //        }
+        //    }
 
-            return false;
-        })
+        //    return false;
+        //})
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
-            if (!Game::Mode->ResourceRates)
-                return false;
             auto Build = (ABuildingActor*)Object;
             auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
             auto Controller = (AFortPlayerControllerAthena*)Params->InstigatedBy;
@@ -507,6 +505,8 @@ namespace UFunctionHooks
 
                     ((AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState)->Aircrafts[0]->PlayEffectsForPlayerJumped(); // TODO: fix for gammodes with 2 aircrafts (50v50 v2)
                     PC->ActivateSlot(EFortQuickBars::Primary, 0, 0, true); // Select the pickaxe
+
+                    Inventory::EmptyInventory(PC);
 
                     bool bFound = false;
                     auto PickaxeEntry = Inventory::FindItemInInventory<UFortWeaponMeleeItemDefinition>(PC, bFound);

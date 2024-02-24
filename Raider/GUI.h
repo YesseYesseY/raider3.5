@@ -64,6 +64,15 @@ namespace GUI
                         currentPlayer = nullptr;
                         mtx.unlock();
                     }
+
+                    if (ZeroGUI::Button(L"Dump inv", { 60.0f, 25.0f }))
+                    {
+                        Inventory::DumpInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
+                    }
+                    if (ZeroGUI::Button(L"Empty inv", { 60.0f, 25.0f }))
+                    {
+                        Inventory::EmptyInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
+                    }
                 }
                 else
                 {
