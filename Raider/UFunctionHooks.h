@@ -393,6 +393,7 @@ namespace UFunctionHooks
             return false;
         })
 
+        // TODO: Make this thing not suck
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
             auto Pawn = (AFortPlayerPawnAthena*)Object;
             auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
@@ -410,17 +411,38 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
+            if (!Game::Mode->ResourceRates)
+                return false;
             auto Build = (ABuildingActor*)Object;
             auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
+            auto Controller = (AFortPlayerControllerAthena*)Params->InstigatedBy;
+            auto Pawn = (AFortPlayerPawnAthena*)Controller->Pawn;
+            if (!Pawn->CurrentWeapon->WeaponData->IsA(UFortWeaponMeleeItemDefinition::StaticClass()))
+                return false;
+                
             if (Build->IsA(ABuildingSMActor::StaticClass()))
             {
                 auto BuildSM = (ABuildingSMActor*)Object;
                 auto MatDef = Game::EFortResourceTypeToItemDef(BuildSM->ResourceType.GetValue());
-                auto MatCount = floor(Params->Damage / 10);
-                auto Pawn = (AFortPlayerPawnAthena*)Params->InstigatedBy->Pawn;
+                if (!MatDef)
+                    return false;
+
+                TEnumAsByte<EEvaluateCurveTableResult> EvalResult;
+                float EvalOut;
+                GetDataTableFunctionLibrary()->STATIC_EvaluateCurveTableRow(BuildSM->BuildingResourceAmountOverride.CurveTable, BuildSM->BuildingResourceAmountOverride.RowName, 0, L"Get resource rate", &EvalResult, &EvalOut);
+                
+                // this isn't exactly like how it is supposed to be but it isn't bad either
+                auto MatCount = floor(EvalOut / (BuildSM->GetMaxHealth() / Params->Damage));
+                if (MatCount <= 0)
+                    return false;
                 auto Pickup = Spawners::SummonPickup(Pawn, MatDef, MatCount, Pawn->K2_GetActorLocation());
-                Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+                if (Pickup)
+                {
+                    Pawn->ServerHandlePickup(Pickup, 1.0f, FVector(), true);
+                    Controller->ClientReportDamagedResourceBuilding(BuildSM, BuildSM->ResourceType, MatCount, BuildSM->GetHealth() <= 0, Params->Damage > 50);
+                }
             }
+            
             return false;
         })
 

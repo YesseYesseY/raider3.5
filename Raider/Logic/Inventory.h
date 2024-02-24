@@ -439,11 +439,11 @@ namespace Inventory
         return bWasSuccessful;
     }
 
-    inline void PickupAnim(AFortPawn* Pawn, AFortPickup* Pickup)
+    inline void PickupAnim(AFortPawn* Pawn, AFortPickup* Pickup, float FlyTime = 0.40f)
     {
         Pickup->ForceNetUpdate();
         Pickup->PickupLocationData.PickupTarget = Pawn;
-        Pickup->PickupLocationData.FlyTime = 0.40f;
+        Pickup->PickupLocationData.FlyTime = FlyTime;
         Pickup->PickupLocationData.ItemOwner = Pawn;
         Pickup->OnRep_PickupLocationData();
 
@@ -532,8 +532,8 @@ namespace Inventory
                         // auto& Entry = Controller->WorldInventory->Inventory.ReplicatedEntries[Idx];
                         
                         auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
-                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup);
-
+                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup/*, Params->InFlyTime*/);
+                        
                         Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
                         Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
 
@@ -574,7 +574,7 @@ namespace Inventory
                             entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
                         }
                         
-                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup);
+                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup/*, Params->InFlyTime*/);
 
                         break;
                     }
