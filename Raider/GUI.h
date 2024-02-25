@@ -4,21 +4,17 @@
 #include <format>
 #include <mutex>
 
-enum class CustomMode
-{
-    NONE,
-    JUGGERNAUT,
-    // Gives the players 500 health and makes you slower.
-    LATEGAME,
-    // TODO: You know what late game is.
-    LIFESTEAL,
-    // TODO: You know what life steal is, but this might be a stupid idea.
-    SPACE,
-    // Sets gravity like the moon // BUG: Unfortunately, the gravityscale variable doesn't update for the client, making them rubberband and making it look weird.
-    SIPHON // Gives 50 shield/health whenever you finish someone. (Late game also has this)
-};
+#define REGISTER_MODE(GM)                                     \
+    if (!picked_gamemode && ZeroGUI::Button(L## #GM, { 150.0f, 25.0f })) \
+    {                                                         \
+        Game::Mode = std::make_unique<GM>(); \
+        picked_gamemode = true; \
+    }
 
-// constexpr CustomMode Mode = CustomMode::NONE;
+namespace Hooks
+{
+    void InitNetworkHooks();
+}
 
 namespace GUI
 {
@@ -28,13 +24,37 @@ namespace GUI
         ZeroGUI::Input::Handle();
 
         static bool menu_opened = true;
+        static bool picked_gamemode = false;
 
         if (GetAsyncKeyState(VK_F2) & 1)
             menu_opened = !menu_opened;
 
         static auto pos = FVector2D { 200.f, 250.0f };
+        static auto setuppos = FVector2D { 200.f, 250.0f };
 
-        if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened))
+        if (ZeroGUI::Window(L"Setup", &setuppos, FVector2D{ 500.0f, 700.0f }, menu_opened && !bTraveled))
+        {
+            //if (ZeroGUI::Button(L"GameModeSolos", { 100.0f, 25.0f }))
+            //{
+            //    Game::Mode = std::make_unique<GameModeSolos>();
+            //}
+            REGISTER_MODE(GameModeSolos)
+            REGISTER_MODE(GameModeDuos)
+            REGISTER_MODE(GameModePlayground)
+            REGISTER_MODE(GameModeLateGame)
+            REGISTER_MODE(GameMode50v50)
+
+            if (picked_gamemode && ZeroGUI::Button(L"Start Game", { 100.0f, 25.0f }))
+            {
+                LOG_INFO("Initializing the game.");
+                Game::Start();
+
+                LOG_INFO("Initializing Network Hooks.");
+                Hooks::InitNetworkHooks();
+            }
+        }
+
+        if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
         {
             if (bListening && HostBeacon)
             {
@@ -69,6 +89,7 @@ namespace GUI
                     {
                         Inventory::DumpInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
                     }
+
                     if (ZeroGUI::Button(L"Empty inv", { 60.0f, 25.0f }))
                     {
                         Inventory::EmptyInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
@@ -155,10 +176,6 @@ namespace GUI
                         if (ZeroGUI::Button(L"Init loot", FVector2D { 100, 25 }))
                         {
                             Game::Mode->InitLoot();
-                        }
-
-                        if (ZeroGUI::Button(L"Test", FVector2D { 100, 25 }))
-                        {
                         }
                         break;
                     }

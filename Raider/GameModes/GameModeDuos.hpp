@@ -7,6 +7,10 @@ public:
     GameModeDuos()
         : AbstractGameModeBase("FortPlaylistAthena Playlist_DefaultDuo.Playlist_DefaultDuo", false, 2)
     {
+    }
+
+    void Initialize()
+    {
         LOG_INFO("Initializing GameMode Duos!");
     }
 

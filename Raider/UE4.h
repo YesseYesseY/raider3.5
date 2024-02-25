@@ -10,7 +10,6 @@
 typedef std::array<UFortWeaponRangedItemDefinition*, 6> PlayerLoadout;
 
 inline bool bTraveled = false;
-inline bool bPlayButton = false;
 inline bool bListening = false;
 static bool bSpawnedFloorLoot = false;
 

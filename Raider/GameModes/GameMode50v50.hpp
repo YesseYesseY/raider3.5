@@ -14,8 +14,12 @@ public:
     GameMode50v50(std::string SoloPlaylistName)
         : AbstractGameModeBase(SoloPlaylistName, false, -2)
     {
+    }
+
+    void Initialize()
+    {
         LOG_INFO("Initializing GameMode 50v50!");
-        
+
         // TO-DO: Fix this to create more buses, It currently creates way too much battle buses and crashes
         // auto GameState = static_cast<AAthena_GameState_C*>(GetWorld()->GameState);
         // GameState->AirCraftBehavior = EAirCraftBehavior::OpposingAirCraftForEachTeam;

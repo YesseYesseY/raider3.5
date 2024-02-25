@@ -41,6 +41,10 @@ public:
     GameModeLateGame()
         : AbstractGameModeBase("FortPlaylistAthena Playlist_DefaultSolo.Playlist_DefaultSolo", false, 1)
     {
+    }
+    
+    void Initialize()
+    {
         LOG_INFO("Initializing Late Game!");
         LOG_INFO("Trying to set SafeZone radius!");
 
@@ -49,7 +53,7 @@ public:
         GameMode->bSafeZoneActive = true;
         GameMode->bSafeZonePaused = false;
     }
-    
+
     void InitializeGameplay()
     {
 

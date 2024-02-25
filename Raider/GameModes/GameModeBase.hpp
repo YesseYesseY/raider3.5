@@ -24,13 +24,24 @@ class AbstractGameModeBase : protected IGameModeBase
 public:
     AbstractGameModeBase(const std::string BasePlaylist, bool bRespawnEnabled = false, int maxTeamSize = 1, bool bRegenEnabled = false, bool bRejoinEnabled = false)
     {
-        this->BasePlaylist = UObject::FindObject<UFortPlaylistAthena>(BasePlaylist);
-
-        this->BasePlaylist->bNoDBNO = maxTeamSize > 1;
         this->bRespawnEnabled = bRespawnEnabled;
         this->bRegenEnabled = bRegenEnabled;
         this->bRejoinEnabled = bRejoinEnabled;
-        
+        this->maxTeamSize = maxTeamSize;
+        this->BasePlaylistName = BasePlaylist;
+        this->Teams = std::make_unique<PlayerTeams>(maxTeamSize);
+    }
+
+    ~AbstractGameModeBase()
+    {
+        GetWorld()->GameState->AuthorityGameMode->ResetLevel();
+    }
+
+    void BaseInitialize()
+    {
+        this->BasePlaylist = UObject::FindObject<UFortPlaylistAthena>(BasePlaylistName);
+
+        this->BasePlaylist->bNoDBNO = this->maxTeamSize > 1;
         /* Rejoin can be disabled for certain gamemodes only. To do this, leave the rejoin bool as false, go to the file of the gamemode you want to play (e.g. Playground), and find the line that says "AbstractGameModeBase(PlaylistName, true, 1)"
         Change it to "AbstractGameModeBase(PlaylistName, true, 1, false, true)". Now you have rejoins enabled for Playground */
 
@@ -49,12 +60,12 @@ public:
         GameState->OnRep_CurrentPlaylistId();
         GameState->OnRep_CurrentPlaylistData();
 
-        this->Teams = std::make_unique<PlayerTeams>(maxTeamSize);
+        Initialize();
     }
 
-    ~AbstractGameModeBase()
+    virtual void Initialize()
     {
-        GetWorld()->GameState->AuthorityGameMode->ResetLevel();
+
     }
 
     // TODO: Make this virtual for gamemode to have custom loot ?
@@ -80,9 +91,10 @@ public:
         }
 
         auto ok2 = lpd[ok.LootPackage.ToString()];
-        //LOG_INFO("Drops for {}:", ok.LootPackage.ToString());
         for (int j = 0; j < drops; j++)
         {
+            if (j >= ok2.size())
+                continue;
             FFortLootPackageData ok3;
             if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
                 ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageID.ToString()]);
@@ -113,17 +125,17 @@ public:
         if (this->BasePlaylist) // Idk if this works
         {
 
-            auto PlaylistLtd = this->BasePlaylist->LootTierData.WeakPtr.Get();
-            auto PlaylistLpd = this->BasePlaylist->LootPackages.WeakPtr.Get();
+            auto PlaylistLtd = Spawners::LoadObject<UDataTable>(UDataTable::StaticClass(), this->BasePlaylist->LootTierData.ObjectID.AssetPathName.ToWString(true).c_str());
+            auto PlaylistLpd = Spawners::LoadObject<UDataTable>(UDataTable::StaticClass(), this->BasePlaylist->LootPackages.ObjectID.AssetPathName.ToWString(true).c_str());
 
             if (PlaylistLtd)
             {
-                loottierdata = (UDataTable*)PlaylistLtd;
+                loottierdata = PlaylistLtd;
                 gotdata = true;
             }
             if (PlaylistLpd)
             {
-                lootpackage = (UDataTable*)PlaylistLpd;
+                lootpackage = PlaylistLpd;
                 gotpack = true;
             }
         }
@@ -408,13 +420,16 @@ protected:
 private:
     int maxHealth = 100;
     int maxShield = 100;
+    int maxTeamSize = 1;
     bool bRespawnEnabled = false;
     bool bRegenEnabled = false;
     bool bRejoinEnabled = false;
     bool bFloortLootSpawned = false;
+    std::string BasePlaylistName = "";
     // Looting stuff
     std::map<std::string, std::vector<FFortLootTierData>> ltd;
     std::map<std::string, std::vector<FFortLootPackageData>> lpd;
 
+public:
     UFortPlaylistAthena* BasePlaylist;
 };

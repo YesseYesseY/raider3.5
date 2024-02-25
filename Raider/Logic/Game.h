@@ -5,11 +5,9 @@ static bool bStartedBus = false;
 #include "UE4.h"
 #include "GameModes/GameModes.hpp"
 
-typedef GameModeSolos CurrentGameMode;
-
 namespace Game
 {
-    inline std::unique_ptr<CurrentGameMode> Mode;
+    inline std::unique_ptr<AbstractGameModeBase> Mode;
 
     void Start()
     {
@@ -38,7 +36,7 @@ namespace Game
         GameMode->MatchState = InProgress;
         GameMode->K2_OnSetMatchState(InProgress);
 
-        Mode = std::make_unique<CurrentGameMode>();
+        Mode->BaseInitialize();
 
         GameMode->MinRespawnDelay = 5.0f;
         GameMode->StartPlay();

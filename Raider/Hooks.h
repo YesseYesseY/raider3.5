@@ -138,27 +138,12 @@ namespace Hooks
         DetourAttachE(Native::World::SpawnPlayActor, SpawnPlayActor);
         DetourAttachE(Native::OnlineBeaconHost::NotifyControlMessage, Beacon_NotifyControlMessage);
         DetourAttachE(Native::OnlineSession::KickPlayer, KickPlayer);
-        DetourAttachE(Native::GameViewportClient::PostRender, PostRender);
         DetourAttachE(Native::GC::CollectGarbage, CollectGarbage);
         DETOUR_END
     }
 
     void ProcessEventHook(UObject* Object, UFunction* Function, void* Parameters)
     {
-        if (!bPlayButton)
-        {
-            static auto PlayButtonFn = UObject::FindObject<UFunction>("BndEvt__BP_PlayButton_K2Node_ComponentBoundEvent_1_CommonButtonClicked__DelegateSignature");
-            if (Function == PlayButtonFn)
-            {
-                bPlayButton = true;
-                LOG_INFO("Initializing the game.");
-                Game::Start();
-
-                LOG_INFO("Initializing Network Hooks.");
-                InitNetworkHooks();
-            }
-        }
-
         if (bTraveled)
         {
 #ifdef LOGGING
