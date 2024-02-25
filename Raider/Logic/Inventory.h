@@ -451,6 +451,23 @@ namespace Inventory
         Pickup->OnRep_bPickedUp();
     }
 
+    static bool CanPickup(AFortPlayerControllerAthena* Controller, AFortPickup* Pickup)
+    {
+        for (int i = 0; i < Controller->WorldInventory->Inventory.ItemInstances.Count; i++)
+        {
+            auto Instance = Controller->WorldInventory->Inventory.ItemInstances[i];
+            auto ItemDef = Instance->ItemEntry.ItemDefinition;
+
+            if (ItemDef != Pickup->PrimaryPickupItemEntry.ItemDefinition)
+                continue;
+
+            if (Instance->ItemEntry.Count >= ItemDef->MaxStackSize)
+                return false;
+        }
+
+        return true;
+    }
+
     inline void OnPickup(AFortPlayerControllerAthena* Controller, void* params)
     {
         auto Params = static_cast<AFortPlayerPawn_ServerHandlePickup_Params*>(params);
@@ -505,25 +522,12 @@ namespace Inventory
 
                             FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
 
-                            for (int j = 0; i < ItemInstances.Num(); j++)
-                            {
-                                auto ItemInstance = ItemInstances[j];
+                            auto Instance = GetInstanceFromGuid(Controller, FocusedGuid);
 
-                                if (!ItemInstance)
-                                    continue;
-
-                                auto Def = ItemInstance->ItemEntry.ItemDefinition;
-                                auto Guid = ItemInstance->ItemEntry.ItemGuid;
-
-                                if (FocusedGuid == Guid)
-                                {
-                                    // if (Params->Pickup->MultiItemPickupEntries)
-                                    auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Def, ItemInstance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
-                                    pickup->PrimaryPickupItemEntry.LoadedAmmo = ItemInstance->GetLoadedAmmo();
-                                    break;
-                                }
-                            }
-
+                            // if (Params->Pickup->MultiItemPickupEntries)
+                            auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Instance->ItemEntry.ItemDefinition, Instance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
+                            pickup->PrimaryPickupItemEntry.LoadedAmmo = Instance->GetLoadedAmmo();
+                            
                             RemoveItemFromSlot(Controller, FocusedSlot, EFortQuickBars::Primary);
                         }
 

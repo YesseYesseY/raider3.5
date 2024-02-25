@@ -393,22 +393,22 @@ namespace UFunctionHooks
             return false;
         })
 
-        //// TODO: Make this thing not suck
-        //DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
-        //    auto Pawn = (AFortPlayerPawnAthena*)Object;
-        //    auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
-        //    if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
-        //    {
-        //        auto Pickup = (AFortPickup*)Params->OtherActor;
+        // TODO: Make this thing not suck
+        DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
+            auto Pawn = (AFortPlayerPawnAthena*)Object;
+            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+            {
+                auto Pickup = (AFortPickup*)Params->OtherActor;
 
-        //        if (Pickup->bWeaponsCanBeAutoPickups)
-        //        {
-        //            Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
-        //        }
-        //    }
+                if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
+                {
+                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+                }
+            }
 
-        //    return false;
-        //})
+            return false;
+        })
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
             auto Build = (ABuildingActor*)Object;
