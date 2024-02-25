@@ -80,35 +80,52 @@ public:
         // Just ignore how messy this is, i've been staring at FModel for hours trying to figure this out and i still don't fully understand it
         auto ok = Utils::WeightedRand(ltd[TierGroup]);
 
-        // TODO: Figure out cases such as WorldPKG.AthenaLoot.Ammo where NumLootPackageDrops is 1.6
-        auto drops = 0;
+        auto drops = std::vector<int>();
         for (int j = 0; j < ok.LootPackageCategoryWeightArray.Count; j++)
         {
-            if (ok.LootPackageCategoryWeightArray[j] != -1)
+            if (ok.LootPackageCategoryMinArray[j] > 0)
             {
-                drops += ((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]);
+                //drops += ((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]);
+                drops.push_back(((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]));
             }
         }
 
         auto ok2 = lpd[ok.LootPackage.ToString()];
-        for (int j = 0; j < drops; j++)
+        for (int j = 0; j < drops.size(); j++)
         {
             if (j >= ok2.size())
                 continue;
-            FFortLootPackageData ok3;
-            if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
-                ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageID.ToString()]);
-            else
-                ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
             
-            auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
-            
-            auto obj = (UFortItemDefinition*)UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
-            if (obj)
-                ret.push_back({obj, ok3.Count});
-            else
+            for (int k = 0; k < drops[j]; k++)
             {
-                LOG_INFO("Object name \"{}\" was not found", unk.ObjectID.AssetPathName.ToString())
+                FFortLootPackageData ok3;
+                if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
+                    ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageID.ToString()]);
+                else
+                    ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
+
+                auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
+
+                bool addedit = false;
+                auto obj = (UFortItemDefinition*)UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
+                if (obj)
+                {
+                    for (int l = 0; l < ret.size(); l++)
+                    {
+                        if (ret[l].ItemDef == obj)
+                        {
+                            ret[l].Count += ok3.Count;
+                            addedit = true;
+                        }
+                    }
+
+                    if (!addedit)
+                        ret.push_back({ obj, ok3.Count });
+                }
+                else
+                {
+                    LOG_INFO("Object name \"{}\" was not found", unk.ObjectID.AssetPathName.ToString())
+                }
             }
         }
 

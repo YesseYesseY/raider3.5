@@ -5,10 +5,14 @@
 #include <mutex>
 
 #define REGISTER_MODE(GM)                                     \
-    if (!picked_gamemode && ZeroGUI::Button(L## #GM, { 150.0f, 25.0f })) \
+    if (ZeroGUI::Button(L## #GM, { 150.0f, 25.0f })) \
     {                                                         \
         Game::Mode = std::make_unique<GM>(); \
-        picked_gamemode = true; \
+        LOG_INFO("Initializing the game.");          \
+        Game::Start();                               \
+                                                        \
+        LOG_INFO("Initializing Network Hooks.");     \
+        Hooks::InitNetworkHooks();                   \
     }
 
 namespace Hooks
@@ -24,7 +28,6 @@ namespace GUI
         ZeroGUI::Input::Handle();
 
         static bool menu_opened = true;
-        static bool picked_gamemode = false;
 
         if (GetAsyncKeyState(VK_F2) & 1)
             menu_opened = !menu_opened;
@@ -43,15 +46,6 @@ namespace GUI
             REGISTER_MODE(GameModePlayground)
             REGISTER_MODE(GameModeLateGame)
             REGISTER_MODE(GameMode50v50)
-
-            if (picked_gamemode && ZeroGUI::Button(L"Start Game", { 100.0f, 25.0f }))
-            {
-                LOG_INFO("Initializing the game.");
-                Game::Start();
-
-                LOG_INFO("Initializing Network Hooks.");
-                Hooks::InitNetworkHooks();
-            }
         }
 
         if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
