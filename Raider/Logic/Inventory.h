@@ -498,92 +498,93 @@ namespace Inventory
             }
             LOG_INFO("DupItemIndex: {}", DupItemIndex);
 
-            if (!bCanGoInSecondary)
+            if (DupItemIndex != -1)
             {
-                auto& PrimaryQuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
-
-                for (int i = 1; i < PrimaryQuickBarSlots.Num(); i++)
+                auto newcount = ItemInstances[DupItemIndex]->ItemEntry.Count + Params->Pickup->PrimaryPickupItemEntry.Count;
+                if (newcount > WorldItemDefinition->MaxStackSize)
                 {
-                    if (!PrimaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
+                    auto leftover = newcount - WorldItemDefinition->MaxStackSize;
+                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
+                    newcount = WorldItemDefinition->MaxStackSize;
+                }
+
+                Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry.Count = newcount;
+                Controller->WorldInventory->Inventory.ReplicatedEntries[DupItemIndex].Count = newcount;
+
+                Update(Controller, DupItemIndex);
+            }
+            else
+            {
+                if (!bCanGoInSecondary)
+                {
+                    auto& PrimaryQuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
+
+                    for (int i = 1; i < PrimaryQuickBarSlots.Num(); i++)
                     {
                         if (Params->Pickup->IsActorBeingDestroyed() || Params->Pickup->bPickedUp)
                             return;
 
-                        if (i >= 6)
+                        if (!PrimaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
                         {
-                            auto QuickBars = Controller->QuickBars;
 
-                            auto FocusedSlot = QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
-
-                            if (FocusedSlot == 0) // don't replace the pickaxe
-                                continue;
-
-                            i = FocusedSlot;
-
-                            FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
-
-                            auto Instance = GetInstanceFromGuid(Controller, FocusedGuid);
-
-                            // if (Params->Pickup->MultiItemPickupEntries)
-                            auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Instance->ItemEntry.ItemDefinition, Instance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
-                            pickup->PrimaryPickupItemEntry.LoadedAmmo = Instance->GetLoadedAmmo();
-                            
-                            RemoveItemFromSlot(Controller, FocusedSlot, EFortQuickBars::Primary);
-                        }
-
-                        int Idx = 0;
-                        auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
-                        // auto& Entry = Controller->WorldInventory->Inventory.ReplicatedEntries[Idx];
-                        
-                        auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
-                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup/*, Params->InFlyTime*/);
-                        
-                        Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
-                        Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
-
-                        Update(Controller);
-
-                        break;
-                    }
-                }
-            }
-
-            else
-            {
-                auto& SecondaryQuickBarSlots = Controller->QuickBars->SecondaryQuickBar.Slots;
-
-                for (int i = 0; i < SecondaryQuickBarSlots.Num(); i++)
-                {
-                    if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
-                    {
-                        FFortItemEntry entry;
-                        if (DupItemIndex != -1)
-                        {
-                            auto newcount = ItemInstances[DupItemIndex]->ItemEntry.Count + Params->Pickup->PrimaryPickupItemEntry.Count;
-                            if (newcount > WorldItemDefinition->MaxStackSize)
+                            if (i >= 6)
                             {
-                                auto leftover = newcount - WorldItemDefinition->MaxStackSize;
-                                Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
-                                newcount = WorldItemDefinition->MaxStackSize;
+                                auto QuickBars = Controller->QuickBars;
+
+                                auto FocusedSlot = QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
+
+                                if (FocusedSlot == 0) // don't replace the pickaxe
+                                    continue;
+
+                                i = FocusedSlot;
+
+                                FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
+
+                                auto Instance = GetInstanceFromGuid(Controller, FocusedGuid);
+
+                                // if (Params->Pickup->MultiItemPickupEntries)
+                                auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Instance->ItemEntry.ItemDefinition, Instance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
+                                pickup->PrimaryPickupItemEntry.LoadedAmmo = Instance->GetLoadedAmmo();
+
+                                RemoveItemFromSlot(Controller, FocusedSlot, EFortQuickBars::Primary);
                             }
 
-                            Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry.Count = newcount;
-                            Controller->WorldInventory->Inventory.ReplicatedEntries[DupItemIndex].Count = newcount;
+                            int Idx = 0;
+                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
+                            // auto& Entry = Controller->WorldInventory->Inventory.ReplicatedEntries[Idx];
 
-                            Update(Controller, DupItemIndex);
-                            entry = Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry;
-                        }
-                        else
-                        {
-                            entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
-                        }
-                        
-                        PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup/*, Params->InFlyTime*/);
+                            auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
 
-                        break;
+                            Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
+                            Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
+
+                            Update(Controller, i);
+
+                            break;
+                        }
                     }
                 }
+
+                else
+                {
+                    auto& SecondaryQuickBarSlots = Controller->QuickBars->SecondaryQuickBar.Slots;
+
+                    // else
+                    //{
+                    for (int i = 0; i < SecondaryQuickBarSlots.Num(); i++)
+                    {
+                        if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
+                        {
+                            AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
+                            break;
+                        }
+                    }
+                    //}
+                }
             }
+
+
+            PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup /*, Params->InFlyTime*/);
         }
     }
 

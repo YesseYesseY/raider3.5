@@ -393,29 +393,32 @@ namespace UFunctionHooks
             return false;
         })
 
-        // TODO: Make this thing not suck
-        DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
-            auto Pawn = (AFortPlayerPawnAthena*)Object;
-            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
-            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
-            {
-                auto Pickup = (AFortPickup*)Params->OtherActor;
+        // Known Problems:
+        // Randomly duplicates items, probably picking up twice
+        // 
+        //DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
+        //    auto Pawn = (AFortPlayerPawnAthena*)Object;
+        //    auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+        //    if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+        //    {
+        //        auto Pickup = (AFortPickup*)Params->OtherActor;
 
-                if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
-                {
-                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
-                }
-            }
+        //        if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
+        //        {
+        //            Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+        //        }
+        //    }
 
-            return false;
-        })
+        //    return false;
+        //})
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
             auto Build = (ABuildingActor*)Object;
             auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
             auto Controller = (AFortPlayerControllerAthena*)Params->InstigatedBy;
             auto Pawn = (AFortPlayerPawnAthena*)Controller->Pawn;
-            if (!Pawn->CurrentWeapon->WeaponData->IsA(UFortWeaponMeleeItemDefinition::StaticClass()))
+            
+            if (!Params->DamageCauser->IsA(AB_Melee_Impact_Generic_C::StaticClass()))
                 return false;
                 
             if (Build->IsA(ABuildingSMActor::StaticClass()))
