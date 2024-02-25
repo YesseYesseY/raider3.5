@@ -46,9 +46,13 @@ namespace Hooks
     {
         auto ammodef = (UFortAmmoItemDefinition*)UObject::GObjects->GetByIndex(((*(TSoftObjectPtr<UObject*>*)&Weapon->WeaponData->UnknownData10).WeakPtr.ObjectIndex));
         auto pawn = (APawn*)Weapon->Owner;
-        if (!Inventory::TryRemoveItem((AFortPlayerControllerAthena*)pawn->Controller, ammodef, AmountToRemove))
+        auto controller = (AFortPlayerController*)pawn->Controller;
+        if (!controller->bInfiniteAmmo)
         {
-            LOG_ERROR("Failed to remove ammo from user");
+            if (!Inventory::TryRemoveItem((AFortPlayerControllerAthena*)pawn->Controller, ammodef, AmountToRemove))
+            {
+                LOG_ERROR("Failed to remove ammo from user");
+            }
         }
         //return Native::Inventory::ReloadThing(Weapon, AmountToRemove);
     }

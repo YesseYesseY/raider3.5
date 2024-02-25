@@ -492,6 +492,12 @@ namespace Inventory
             {
                 if (ItemInstances[i]->ItemEntry.ItemDefinition == WorldItemDefinition)
                 {
+                    if (ItemInstances[i]->ItemEntry.Count >= WorldItemDefinition->MaxStackSize)
+                    {
+                        if (WorldItemDefinition->bAllowMultipleStacks)
+                            continue;
+                    }
+
                     DupItemIndex = i;
                     break;
                 }

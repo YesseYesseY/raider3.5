@@ -9,7 +9,7 @@
 #include "UE4.h"
 
 // #define LOGGING
-//#define CHEATS
+#define CHEATS
 #define MAXPLAYERS 100
 
 // Define the hook with ufunction full name
@@ -85,10 +85,9 @@ namespace UFunctionHooks
                         auto& Command = Arguments[0];
                         std::transform(Command.begin(), Command.end(), Command.begin(), ::tolower);
 
-                        if (Command == "start")
+                        if (Command == "infammo")
                         {
-                            PC->ClientMessage(L"starting Aircraft!", FName(), 0);
-                            GetKismetSystem()->STATIC_ExecuteConsoleCommand(GetWorld(), L"startaircraft", nullptr);
+                            PC->bInfiniteAmmo = !PC->bInfiniteAmmo;
                         }
 
                         else
@@ -174,9 +173,12 @@ namespace UFunctionHooks
 
                     UFortResourceItemDefinition* matdef = Game::EFortResourceTypeToItemDef(BuildingActor->ResourceType);
                     
-                    if (!Inventory::TryRemoveItem(PC, matdef, 10))
+                    if (!PC->bInfiniteAmmo)
                     {
-                        LOG_ERROR("Failed to remove resource from building")
+                        if (!Inventory::TryRemoveItem(PC, matdef, 10))
+                        {
+                            LOG_ERROR("Failed to remove resource from building")
+                        }
                     }
                 }
                 else
@@ -491,9 +493,12 @@ namespace UFunctionHooks
                 // 0.75 is from DefaultGameData. This could be gotten at runtime but... it's the same for all materials so it doesn't matter
                 auto Cost = floor(((1 - HealthPercent) * 0.75) * 10);
                 Params->BuildingActorToRepair->RepairBuilding(Controller, Cost);
-                if (!Inventory::TryRemoveItem(Controller, Game::EFortResourceTypeToItemDef(Params->BuildingActorToRepair->ResourceType), Cost))
+                if (!Controller->bInfiniteAmmo)
                 {
-                    LOG_ERROR("Failed to remove resource after repair")
+                    if (!Inventory::TryRemoveItem(Controller, Game::EFortResourceTypeToItemDef(Params->BuildingActorToRepair->ResourceType), Cost))
+                    {
+                        LOG_ERROR("Failed to remove resource after repair")
+                    }
                 }
             }
 
