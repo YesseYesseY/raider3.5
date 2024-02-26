@@ -324,6 +324,29 @@ public:
                 }
             }
             floots.FreeArray();
+
+            //GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass B_Athena_VendingMachine.B_Athena_VendingMachine_C"), &floots);
+            //LOG_INFO("Found {} vending machines", floots.Count);
+            //for (int i = 0; i < floots.Count; i++)
+            //{
+            //    auto floot = (ABuildingItemCollectorActor*)floots[i];
+
+            //    LOG_INFO("Flooter: {}", floot->ItemCollections.Count);
+            //    
+            //    static auto inpitem = UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData");
+            //    static auto outitem = UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition StoneItemData.StoneItemData");
+            //    static auto outinstance = (UFortWorldItem*)outitem->CreateTemporaryItemInstanceBP(1, 1);
+
+            //    FColletorUnitInfo unitinfo;
+            //    unitinfo.InputCount.Value = 200;
+            //    unitinfo.InputItem = inpitem;
+            //    unitinfo.OutputItem = outitem;
+            //    unitinfo.OutputItemEntry.Add(outinstance->ItemEntry);
+            //    floot->ItemCollections[0] = unitinfo;
+            //    floot->ItemCollections[1] = unitinfo;
+            //    floot->ItemCollections[2] = unitinfo;
+            //}
+            //floots.FreeArray();
         }
 
         OnPlayerJoined(Controller);

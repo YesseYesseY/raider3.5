@@ -84,6 +84,10 @@ FORCEINLINE UKismetMathLibrary* GetKismetMath()
 {
     return (UKismetMathLibrary*)UKismetMathLibrary::StaticClass();
 }
+FORCEINLINE UKismetGuidLibrary* GetKismetGuid()
+{
+    return (UKismetGuidLibrary*)UKismetGuidLibrary::StaticClass();
+}
 
 inline void CreateConsole()
 {

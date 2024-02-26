@@ -685,13 +685,31 @@ namespace Inventory
         return true;
     }
 
-    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove)
+    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove, bool focusedPrio = true)
     {
         auto& ItemInstances = PlayerController->WorldInventory->Inventory.ItemInstances;
 
         if (!ItemDef)
             return false;
         bool success = false;
+
+        FGuid FocusedGuid = FGuid();
+        if (focusedPrio)
+        {
+            auto FocusedSlotIndex = PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
+
+            if (FocusedSlotIndex >= 0 && FocusedSlotIndex < PlayerController->QuickBars->PrimaryQuickBar.Slots.Count)
+            {
+                auto FocusedGuidTemp = PlayerController->QuickBars->PrimaryQuickBar.Slots[FocusedSlotIndex].Items[0];
+                auto FocusedInstance = GetInstanceFromGuid(PlayerController, FocusedGuidTemp);
+                if (FocusedInstance && FocusedInstance->ItemEntry.ItemDefinition == ItemDef)
+                {
+                    FocusedGuid = FocusedGuidTemp;
+                }
+            }
+        }
+
+        int index = -1;
         for (int i = 0; i < ItemInstances.Num(); i++)
         {
             auto ItemInstance = ItemInstances[i];
@@ -699,27 +717,38 @@ namespace Inventory
             if (!ItemInstance)
                 continue;
 
-            if (ItemInstance->ItemEntry.ItemDefinition && ItemInstance->ItemEntry.ItemDefinition == ItemDef)
+            if (FocusedGuid != FGuid())
             {
-                auto finalcount = ItemInstance->ItemEntry.Count - AmountToRemove;
-                if (finalcount > 0)
-                {
-                    ItemInstance->ItemEntry.Count = finalcount;
-                    PlayerController->WorldInventory->Inventory.ReplicatedEntries[i].Count = finalcount;
-                }
-                else
-                {
-                    if (!TryDeleteItem(PlayerController, i))
-                    {
-                        LOG_ERROR("Failed to remove item entry {}", i);
-                    }
-                }
-                Update(PlayerController, i);
-                success = true;
-                break;
+                if (ItemInstance->ItemEntry.ItemGuid == FocusedGuid)
+                    index = i;
+            }
+            else
+            {
+                if (ItemInstance->ItemEntry.ItemDefinition && ItemInstance->ItemEntry.ItemDefinition == ItemDef)
+                    index = i;
             }
         }
 
+        if (index != -1)
+        {
+            auto instance = ItemInstances[index];
+            auto finalcount = instance->ItemEntry.Count - AmountToRemove;
+            if (finalcount > 0)
+            {
+                instance->ItemEntry.Count = finalcount;
+                PlayerController->WorldInventory->Inventory.ReplicatedEntries[index].Count = finalcount;
+            }
+            else
+            {
+                if (!TryDeleteItem(PlayerController, index))
+                {
+                    LOG_ERROR("Failed to remove item entry {}", index);
+                }
+            }
+            Update(PlayerController, index);
+            success = true;
+        }
+        
         return success;
     }
 
