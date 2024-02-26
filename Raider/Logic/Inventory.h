@@ -378,6 +378,9 @@ namespace Inventory
 
     static bool CanPickup(AFortPlayerControllerAthena* Controller, AFortPickup* Pickup)
     {
+        if (Pickup->bActorIsBeingDestroyed || Pickup->bPickedUp)
+            return false;
+
         for (int i = 0; i < Controller->WorldInventory->Inventory.ItemInstances.Count; i++)
         {
             auto Instance = Controller->WorldInventory->Inventory.ItemInstances[i];

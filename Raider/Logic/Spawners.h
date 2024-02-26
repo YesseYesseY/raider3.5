@@ -134,6 +134,35 @@ namespace Spawners
         }
     }
 
+    static void SpawnPickupFromContainer(ABuildingContainer* Container, UFortItemDefinition* ItemDef, int Count)
+    {
+        auto LootSpawnLocation_Athena = Container->LootSpawnLocation_Athena;
+        auto Location = Container->K2_GetActorLocation() + (Container->GetActorRightVector() * LootSpawnLocation_Athena.Y) + (Container->GetActorUpVector() * LootSpawnLocation_Athena.Z);
+
+        auto FortPickup = SpawnActor<AFortPickup>(Location);
+        if (FortPickup)
+        {
+            FortPickup->bReplicates = true; // should be autmoatic but eh
+
+            FortPickup->PrimaryPickupItemEntry.Count = Count;
+            FortPickup->PrimaryPickupItemEntry.ItemDefinition = ItemDef;
+            if (ItemDef->IsA(UFortWeaponRangedItemDefinition::StaticClass()))
+            {
+                auto weapdef = (UFortWeaponItemDefinition*)ItemDef;
+                FortPickup->PrimaryPickupItemEntry.LoadedAmmo = ((FFortBaseWeaponStats*)weapdef->WeaponStatHandle.DataTable->RowMap.GetByKey(weapdef->WeaponStatHandle.RowName))->ClipSize;
+            }
+            
+            FortPickup->OnRep_PrimaryPickupItemEntry();
+            
+            FortPickup->bTossedFromContainer = true;
+            FortPickup->OnRep_TossedFromContainer();
+
+            // TODO: Fix floorloot getting tossed too far
+
+            FortPickup->TossPickup(Location, nullptr, 6, true);
+        }
+    }
+
     static void SpawnDeco(AFortDecoTool* Tool, void* _Params)
     {
         if (!_Params)

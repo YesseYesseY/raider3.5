@@ -607,10 +607,9 @@ namespace UFunctionHooks
                             TierGroup = "Loot_AthenaAmmoLarge";
                     }
                     auto loot = Game::Mode->GetLoot(TierGroup);
-                    auto spawnloc = Container->K2_GetActorLocation() + (Container->GetActorRightVector() * 42.0f);
                     for (int i = 0; i < loot.size(); i++)
                     {
-                        Spawners::SummonPickupFromChest(loot[i].ItemDef, loot[i].Count, spawnloc);
+                        Spawners::SpawnPickupFromContainer(Container, loot[i].ItemDef, loot[i].Count);
                     }
                 }
             }

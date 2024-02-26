@@ -301,10 +301,7 @@ public:
                 auto loot = GetLoot("Loot_AthenaFloorLoot");
                 for (int j = 0; j < loot.size(); j++)
                 {
-                    auto Location = floot->K2_GetActorLocation();
-                    //Location.Z += 42; // scuffed but it worked for chests
-
-                    Spawners::SpawnPickupFromFloorLoot(loot[j].ItemDef, loot[j].Count, Location);
+                    Spawners::SpawnPickupFromContainer(floot, loot[j].ItemDef, loot[j].Count);
                 }
             }
             floots.FreeArray();
@@ -317,10 +314,7 @@ public:
                 auto loot = GetLoot("Loot_AthenaFloorLoot_Warmup");
                 for (int j = 0; j < loot.size(); j++)
                 {
-                    auto Location = floot->K2_GetActorLocation();
-                    Location.Z += 42; // scuffed but it worked for chests
-
-                    Spawners::SpawnPickupFromFloorLoot(loot[j].ItemDef, loot[j].Count, Location);
+                    Spawners::SpawnPickupFromContainer(floot, loot[j].ItemDef, loot[j].Count);
                 }
             }
             floots.FreeArray();
