@@ -86,7 +86,7 @@ namespace Inventory
         return GetEntryInSlot(Controller, Slot, Item, QuickBars).ItemDefinition;
     }
 
-    static UFortWorldItem* GetInstanceFromGuid(AController* PC, const FGuid& ToFindGuid)
+    static UFortWorldItem* GetInstanceFromGuid(AController* PC, const FGuid& ToFindGuid, int* index = nullptr)
     {
         auto& ItemInstances = static_cast<AFortPlayerController*>(PC)->WorldInventory->Inventory.ItemInstances;
 
@@ -101,6 +101,8 @@ namespace Inventory
 
             if (ToFindGuid == Guid)
             {
+                if (index)
+                    *index = j;
                 return ItemInstance;
             }
         }
@@ -362,83 +364,6 @@ namespace Inventory
         EquipInventoryItem(Controller, pickaxeEntry.ItemGuid);
     }
 
-    static bool OnDrop(AFortPlayerControllerAthena* Controller, void* params)
-    {
-        auto Params = static_cast<AFortPlayerController_ServerAttemptInventoryDrop_Params*>(params);
-
-        if (!Params || !Controller)
-            return false;
-
-        auto& ItemInstances = Controller->WorldInventory->Inventory.ItemInstances;
-        auto QuickBars = Controller->QuickBars;
-
-        auto& PrimaryQuickBarSlots = QuickBars->PrimaryQuickBar.Slots;
-        auto& SecondaryQuickBarSlots = QuickBars->SecondaryQuickBar.Slots;
-
-        bool bWasSuccessful = false;
-
-        for (int i = 1; i < PrimaryQuickBarSlots.Num(); i++)
-        {
-            if (PrimaryQuickBarSlots[i].Items.Data)
-            {
-                for (int j = 0; j < PrimaryQuickBarSlots[i].Items.Num(); j++)
-                {
-                    if (PrimaryQuickBarSlots[i].Items[j] == Params->ItemGuid)
-                    {
-                        auto Instance = GetInstanceFromGuid(Controller, Params->ItemGuid);
-
-                        if (Instance)
-                        {
-                            auto Definition = Instance->ItemEntry.ItemDefinition;
-                            auto SuccessfullyRemoved = RemoveItemFromSlot(Controller, i, EFortQuickBars::Primary, j + 1);
-
-                            if (Definition && SuccessfullyRemoved)
-                            {
-                                auto Pickup = Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, 1, Controller->Pawn->K2_GetActorLocation());
-                                Pickup->PrimaryPickupItemEntry.LoadedAmmo = Instance->GetLoadedAmmo();
-                                bWasSuccessful = true;
-                                break;
-                            }
-
-                            LOG_ERROR("Couldn't find a definition for the dropped item!");
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!bWasSuccessful)
-        {
-            for (int i = 0; i < SecondaryQuickBarSlots.Num(); i++)
-            {
-                if (SecondaryQuickBarSlots[i].Items.Data)
-                {
-                    for (int j = 0; j < SecondaryQuickBarSlots[i].Items.Num(); j++)
-                    {
-                        if (SecondaryQuickBarSlots[i].Items[j] == Params->ItemGuid)
-                        {
-                            auto Definition = GetDefinitionInSlot(Controller, i, j, EFortQuickBars::Secondary);
-                            auto bSucceeded = RemoveItemFromSlot(Controller, i, EFortQuickBars::Secondary, j + 1);
-
-                            if (Definition && bSucceeded)
-                            {
-                                Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, 1, Controller->Pawn->K2_GetActorLocation());
-                                bWasSuccessful = true;
-                                break;
-                            }
-                            LOG_ERROR("Couldn't find a definition for the dropped item!");
-                        }
-                    }
-                }
-            }
-        }
-
-        if (bWasSuccessful && PrimaryQuickBarSlots[0].Items.Data)
-            EquipInventoryItem(Controller, PrimaryQuickBarSlots[0].Items[0]); // just select pickaxe for now
-
-        return bWasSuccessful;
-    }
-
     inline void PickupAnim(AFortPawn* Pawn, AFortPickup* Pickup, float FlyTime = 0.40f)
     {
         Pickup->ForceNetUpdate();
@@ -685,6 +610,30 @@ namespace Inventory
         return true;
     }
 
+    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, FGuid Guid, int AmountToRemove)
+    {
+        int index = 0;
+        auto instance = GetInstanceFromGuid(PlayerController, Guid, &index);
+        if (!instance)
+            return false;
+        auto finalcount = instance->ItemEntry.Count - AmountToRemove;
+        if (finalcount > 0)
+        {
+            instance->ItemEntry.Count = finalcount;
+            PlayerController->WorldInventory->Inventory.ReplicatedEntries[index].Count = finalcount;
+        }
+        else
+        {
+            if (!TryDeleteItem(PlayerController, index))
+            {
+                LOG_ERROR("Failed to remove item entry {}", index);
+                return false;
+            }
+        }
+        Update(PlayerController, index);
+        return true;
+    }
+
     static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove, bool focusedPrio = true)
     {
         auto& ItemInstances = PlayerController->WorldInventory->Inventory.ItemInstances;
@@ -709,47 +658,51 @@ namespace Inventory
             }
         }
 
-        int index = -1;
-        for (int i = 0; i < ItemInstances.Num(); i++)
+        if (FocusedGuid != FGuid())
         {
-            auto ItemInstance = ItemInstances[i];
-
-            if (!ItemInstance)
-                continue;
-
-            if (FocusedGuid != FGuid())
+            success = TryRemoveItem(PlayerController, FocusedGuid, AmountToRemove);
+        }
+        else
+        {
+            for (int i = 0; i < ItemInstances.Num(); i++)
             {
-                if (ItemInstance->ItemEntry.ItemGuid == FocusedGuid)
-                    index = i;
-            }
-            else
-            {
+                auto ItemInstance = ItemInstances[i];
+
+                if (!ItemInstance)
+                    continue;
+
                 if (ItemInstance->ItemEntry.ItemDefinition && ItemInstance->ItemEntry.ItemDefinition == ItemDef)
-                    index = i;
+                    success = TryRemoveItem(PlayerController, ItemInstance->ItemEntry.ItemGuid, AmountToRemove);
             }
         }
+        return success;
+    }
 
-        if (index != -1)
+    static bool OnDrop(AFortPlayerControllerAthena* Controller, void* params)
+    {
+        auto Params = static_cast<AFortPlayerController_ServerAttemptInventoryDrop_Params*>(params);
+
+        if (!Params || !Controller)
+            return false;
+
+        auto Instance = GetInstanceFromGuid(Controller, Params->ItemGuid);
+        if (!Instance)
+            return false;
+        auto LoadedAmmo = Instance->GetLoadedAmmo();
+        auto Definition = Instance->ItemEntry.ItemDefinition;
+
+        bool bWasSuccessful = TryRemoveItem(Controller, Params->ItemGuid, Params->Count);
+
+        if (bWasSuccessful)
         {
-            auto instance = ItemInstances[index];
-            auto finalcount = instance->ItemEntry.Count - AmountToRemove;
-            if (finalcount > 0)
-            {
-                instance->ItemEntry.Count = finalcount;
-                PlayerController->WorldInventory->Inventory.ReplicatedEntries[index].Count = finalcount;
-            }
-            else
-            {
-                if (!TryDeleteItem(PlayerController, index))
-                {
-                    LOG_ERROR("Failed to remove item entry {}", index);
-                }
-            }
-            Update(PlayerController, index);
-            success = true;
+            auto Pickup = Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, Params->Count, Controller->Pawn->K2_GetActorLocation());
+            Pickup->PrimaryPickupItemEntry.LoadedAmmo = LoadedAmmo;
         }
         
-        return success;
+        if (bWasSuccessful && Controller->QuickBars->PrimaryQuickBar.Slots[0].Items.Data)
+            EquipInventoryItem(Controller, Controller->QuickBars->PrimaryQuickBar.Slots[0].Items[0]); // just select pickaxe for now
+
+        return bWasSuccessful;
     }
 
     static void DumpInventory(AFortPlayerControllerAthena* PlayerController)
