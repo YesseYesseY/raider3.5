@@ -127,6 +127,9 @@
     <ClInclude Include="Logic\Building.h">
       <Filter>Logic</Filter>
     </ClInclude>
+    <ClInclude Include="GameModes\GameModePlaygroundV2.hpp">
+      <Filter>Game\Modes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

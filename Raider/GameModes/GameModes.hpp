@@ -6,3 +6,4 @@
 #include "GameModeLateGame.hpp"
 #include "GameMode50v50.hpp"
 #include "GameModePlayground.hpp"
+#include "GameModePlaygroundV2.hpp"

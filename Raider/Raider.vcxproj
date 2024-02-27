@@ -124,6 +124,7 @@
   <ItemGroup>
     <ClInclude Include="GameModes\GameModeDuos.hpp" />
     <ClInclude Include="GameModes\GameModeLateGame.hpp" />
+    <ClInclude Include="GameModes\GameModePlaygroundV2.hpp" />
     <ClInclude Include="GameModes\GameModes.hpp" />
     <ClInclude Include="GameModes\GameModeSolos.hpp" />
     <ClInclude Include="GameModes\GameModePlayground.hpp" />

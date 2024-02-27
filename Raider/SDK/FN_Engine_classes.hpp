@@ -7057,7 +7057,9 @@ public:
 class UCurveTable : public UObject
 {
 public:
-	unsigned char                                      UnknownData00[0x58];                                      // 0x0028(0x0058) MISSED OFFSET
+	void* pad;
+	class TMap<struct FName, struct FRichCurve*> RowMap;
+	//unsigned char                                      UnknownData00[0x58 - sizeof(class TMap<struct FName, struct FRichCurve>)];                                      // 0x0028(0x0058) MISSED OFFSET
 
 	static UClass* StaticClass()
 	{

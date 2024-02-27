@@ -46,6 +46,7 @@ namespace GUI
             REGISTER_MODE(GameModePlayground)
             REGISTER_MODE(GameModeLateGame)
             REGISTER_MODE(GameMode50v50)
+            REGISTER_MODE(GameModePlaygroundV2)
         }
 
         if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
