@@ -6,6 +6,7 @@
 #include "Logic/Game.h"
 #include "Logic/Spawners.h"
 #include "Logic/Abilities.h"
+#include "Logic/Building.h"
 #include "UE4.h"
 
 // #define LOGGING
@@ -398,64 +399,36 @@ namespace UFunctionHooks
         // Known Problems:
         // Randomly duplicates items, probably picking up twice
         // 
-        //DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
-        //    auto Pawn = (AFortPlayerPawnAthena*)Object;
-        //    auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
-        //    if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
-        //    {
-        //        auto Pickup = (AFortPickup*)Params->OtherActor;
+        DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
+            auto Pawn = (AFortPlayerPawnAthena*)Object;
+            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+            {
+                auto Pickup = (AFortPickup*)Params->OtherActor;
 
-        //        if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
-        //        {
-        //            Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
-        //        }
-        //    }
+                if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
+                {
+                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+                }
+            }
 
-        //    return false;
-        //})
+            return false;
+        })
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
             auto Build = (ABuildingActor*)Object;
             auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
-            auto Controller = (AFortPlayerControllerAthena*)Params->InstigatedBy;
-            auto Pawn = (AFortPlayerPawnAthena*)Controller->Pawn;
             
-            if (!Params->DamageCauser->IsA(AB_Melee_Impact_Generic_C::StaticClass()))
-                return false;
-                
-            if (Build->IsA(ABuildingSMActor::StaticClass()))
-            {
-                auto BuildSM = (ABuildingSMActor*)Object;
-                auto MatDef = Game::EFortResourceTypeToItemDef(BuildSM->ResourceType.GetValue());
-                if (!MatDef)
-                    return false;
+            Building::FarmBuild(Build, Params);
+            
+            return false;
+        })
 
-                static UCurveTable* resrates = nullptr;
-                if (resrates == nullptr)
-                {
-                    auto fromplaylist = Spawners::LoadObject<UCurveTable>(UCurveTable::StaticClass(), Game::Mode->BasePlaylist->ResourceRates.ObjectID.AssetPathName.ToWString(true).c_str());
-                    if (fromplaylist)
-                        resrates = fromplaylist;
-                    else
-                        resrates = BuildSM->BuildingResourceAmountOverride.CurveTable;
-                }
-
-                TEnumAsByte<EEvaluateCurveTableResult> EvalResult;
-                float EvalOut;
-                GetDataTableFunctionLibrary()->STATIC_EvaluateCurveTableRow(resrates, BuildSM->BuildingResourceAmountOverride.RowName, 0, L"Get resource rate", &EvalResult, &EvalOut);
-
-                auto RawDamage = Params->Damage;
-                // this isn't exactly like how it is supposed to be but it isn't bad either
-                auto MatCount = floor(EvalOut / (BuildSM->GetMaxHealth() / RawDamage));
-                if (MatCount <= 0)
-                    return false;
-                auto Pickup = Spawners::SummonPickup(Pawn, MatDef, MatCount, Pawn->K2_GetActorLocation());
-                if (Pickup)
-                {
-                    Pawn->ServerHandlePickup(Pickup, 1.0f, FVector(), true);
-                    Controller->ClientReportDamagedResourceBuilding(BuildSM, BuildSM->ResourceType, MatCount, BuildSM->GetHealth() <= 0, RawDamage > 50);
-                }
-            }
+        DEFINE_PEHOOK("Function Car_Copper.Car_Copper_C.OnDamageServer", {
+            auto Build = (ABuildingActor*)Object;
+            auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
+            
+            Building::FarmBuild(Build, Params);
             
             return false;
         })
@@ -696,7 +669,10 @@ namespace UFunctionHooks
             auto PC = (AFortPlayerControllerAthena*)Object;
 
             if (PC && !PC->IsInAircraft())
-                Inventory::OnDrop(PC, Parameters);
+            {
+                auto Params = static_cast<AFortPlayerController_ServerAttemptInventoryDrop_Params*>(Parameters);
+                Inventory::OnDrop(PC, Params->ItemGuid, Params->Count);
+            }
 
             return false;
         })

@@ -131,6 +131,7 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Logger.hpp" />
+    <ClInclude Include="Logic\Building.h" />
     <ClInclude Include="Native.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="SDK.hpp" />

@@ -378,6 +378,9 @@ namespace Inventory
 
     static bool CanPickup(AFortPlayerControllerAthena* Controller, AFortPickup* Pickup)
     {
+        if (Pickup->PawnWhoDroppedPickup == Controller->Pawn)
+            return false;
+
         if (Pickup->bActorIsBeingDestroyed || Pickup->bPickedUp)
             return false;
 
@@ -394,132 +397,6 @@ namespace Inventory
         }
 
         return true;
-    }
-
-    inline void OnPickup(AFortPlayerControllerAthena* Controller, void* params)
-    {
-        auto Params = static_cast<AFortPlayerPawn_ServerHandlePickup_Params*>(params);
-
-        if (!Controller || !Params)
-            return;
-
-        auto& ItemInstances = Controller->WorldInventory->Inventory.ItemInstances;
-
-
-        if (Params->Pickup)
-        {
-            bool bCanGoInSecondary = true; // there is no way this is how you do it // todo: rename
-
-            if (Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortWeaponItemDefinition::StaticClass()) && !Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortDecoItemDefinition::StaticClass()))
-                bCanGoInSecondary = false;
-
-            auto WorldItemDefinition = static_cast<UFortWorldItemDefinition*>(Params->Pickup->PrimaryPickupItemEntry.ItemDefinition);
-
-            int DupItemIndex = -1;
-            for (int i = 0; i < ItemInstances.Count; i++)
-            {
-                if (ItemInstances[i]->ItemEntry.ItemDefinition == WorldItemDefinition)
-                {
-                    if (ItemInstances[i]->ItemEntry.Count >= WorldItemDefinition->MaxStackSize)
-                    {
-                        if (WorldItemDefinition->bAllowMultipleStacks)
-                            continue;
-                    }
-
-                    DupItemIndex = i;
-                    break;
-                }
-            }
-            LOG_INFO("DupItemIndex: {}", DupItemIndex);
-
-            if (DupItemIndex != -1)
-            {
-                auto newcount = ItemInstances[DupItemIndex]->ItemEntry.Count + Params->Pickup->PrimaryPickupItemEntry.Count;
-                if (newcount > WorldItemDefinition->MaxStackSize)
-                {
-                    auto leftover = newcount - WorldItemDefinition->MaxStackSize;
-                    Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
-                    newcount = WorldItemDefinition->MaxStackSize;
-                }
-
-                Controller->WorldInventory->Inventory.ItemInstances[DupItemIndex]->ItemEntry.Count = newcount;
-                Controller->WorldInventory->Inventory.ReplicatedEntries[DupItemIndex].Count = newcount;
-
-                Update(Controller, DupItemIndex);
-            }
-            else
-            {
-                if (!bCanGoInSecondary)
-                {
-                    auto& PrimaryQuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
-
-                    for (int i = 1; i < PrimaryQuickBarSlots.Num(); i++)
-                    {
-                        if (Params->Pickup->IsActorBeingDestroyed() || Params->Pickup->bPickedUp)
-                            return;
-
-                        if (!PrimaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
-                        {
-
-                            if (i >= 6)
-                            {
-                                auto QuickBars = Controller->QuickBars;
-
-                                auto FocusedSlot = QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
-
-                                if (FocusedSlot == 0) // don't replace the pickaxe
-                                    continue;
-
-                                i = FocusedSlot;
-
-                                FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
-
-                                auto Instance = GetInstanceFromGuid(Controller, FocusedGuid);
-
-                                // if (Params->Pickup->MultiItemPickupEntries)
-                                auto pickup = Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), Instance->ItemEntry.ItemDefinition, Instance->ItemEntry.Count, Controller->Pawn->K2_GetActorLocation());
-                                pickup->PrimaryPickupItemEntry.LoadedAmmo = Instance->GetLoadedAmmo();
-
-                                RemoveItemFromSlot(Controller, FocusedSlot, EFortQuickBars::Primary);
-                            }
-
-                            int Idx = 0;
-                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
-                            // auto& Entry = Controller->WorldInventory->Inventory.ReplicatedEntries[Idx];
-
-                            auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
-
-                            Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
-                            Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
-
-                            Update(Controller, i);
-
-                            break;
-                        }
-                    }
-                }
-
-                else
-                {
-                    auto& SecondaryQuickBarSlots = Controller->QuickBars->SecondaryQuickBar.Slots;
-
-                    // else
-                    //{
-                    for (int i = 0; i < SecondaryQuickBarSlots.Num(); i++)
-                    {
-                        if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
-                        {
-                            AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
-                            break;
-                        }
-                    }
-                    //}
-                }
-            }
-
-
-            PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup /*, Params->InFlyTime*/);
-        }
     }
 
     template <typename Class>
@@ -548,6 +425,29 @@ namespace Inventory
         }
 
         return ret;
+    }
+
+    static void EquipNextValidSlot(AFortPlayerControllerAthena* PlayerController)
+    {
+        /*bool Success = false;
+        for (int i = PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot + 1; i < PlayerController->QuickBars->PrimaryQuickBar.Slots.Count; i++)
+        {
+            auto Slot = PlayerController->QuickBars->PrimaryQuickBar.Slots[i];
+            if (Slot.Items.Count > 0)
+            {
+                Success = true;
+                EquipInventoryItem(PlayerController, Slot.Items[0]);
+                PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot = i;
+            }
+        }
+
+        if (!Success)
+        {*/
+        EquipInventoryItem(PlayerController, PlayerController->QuickBars->PrimaryQuickBar.Slots[0].Items[0]);
+        PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot = 0;
+        //}
+
+
     }
 
     static bool TryDeleteItem(AFortPlayerControllerAthena* PlayerController, int Index)
@@ -593,7 +493,7 @@ namespace Inventory
             if (slot != -1)
                 break;
         }
-
+        
         if (slot != -1)
         {
             PlayerController->QuickBars->ServerRemoveItemInternal(guid, false, true);
@@ -608,8 +508,10 @@ namespace Inventory
             LOG_WARN("Quickbar slot not found in TryDeleteItem");
         }
         
-        Update(PlayerController, Index, true);
+        if (slot == PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot)
+            EquipNextValidSlot(PlayerController);
 
+        Update(PlayerController, Index, true);
         return true;
     }
 
@@ -681,31 +583,142 @@ namespace Inventory
         return success;
     }
 
-    static bool OnDrop(AFortPlayerControllerAthena* Controller, void* params)
+    static bool OnDrop(AFortPlayerControllerAthena* Controller, FGuid ItemGuid, int Count)
     {
-        auto Params = static_cast<AFortPlayerController_ServerAttemptInventoryDrop_Params*>(params);
-
-        if (!Params || !Controller)
+        if (!Controller)
             return false;
 
-        auto Instance = GetInstanceFromGuid(Controller, Params->ItemGuid);
+        auto Instance = GetInstanceFromGuid(Controller, ItemGuid);
         if (!Instance)
             return false;
         auto LoadedAmmo = Instance->GetLoadedAmmo();
         auto Definition = Instance->ItemEntry.ItemDefinition;
 
-        bool bWasSuccessful = TryRemoveItem(Controller, Params->ItemGuid, Params->Count);
+        if (Count == -1)
+            Count = Instance->ItemEntry.Count;
+
+        bool bWasSuccessful = TryRemoveItem(Controller, ItemGuid, Count);
 
         if (bWasSuccessful)
         {
-            auto Pickup = Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, Params->Count, Controller->Pawn->K2_GetActorLocation());
+            auto Pickup = Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, Count, Controller->Pawn->K2_GetActorLocation());
             Pickup->PrimaryPickupItemEntry.LoadedAmmo = LoadedAmmo;
+            Pickup->PawnWhoDroppedPickup = (AFortPlayerPawn*)Controller->Pawn;
         }
-        
-        if (bWasSuccessful && Controller->QuickBars->PrimaryQuickBar.Slots[0].Items.Data)
-            EquipInventoryItem(Controller, Controller->QuickBars->PrimaryQuickBar.Slots[0].Items[0]); // just select pickaxe for now
+        //
+        //if (bWasSuccessful && Controller->QuickBars->PrimaryQuickBar.Slots[0].Items.Data)
+        //    EquipInventoryItem(Controller, Controller->QuickBars->PrimaryQuickBar.Slots[0].Items[0]); // just select pickaxe for now
 
         return bWasSuccessful;
+    }
+
+    inline void OnPickup(AFortPlayerControllerAthena* Controller, void* params)
+    {
+        auto Params = static_cast<AFortPlayerPawn_ServerHandlePickup_Params*>(params);
+
+        if (!Controller || !Params)
+            return;
+
+        auto& ItemInstances = Controller->WorldInventory->Inventory.ItemInstances;
+
+        if (Params->Pickup)
+        {
+            bool bCanGoInSecondary = true; // there is no way this is how you do it // todo: rename
+
+            if (Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortWeaponItemDefinition::StaticClass()) && !Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortDecoItemDefinition::StaticClass()))
+                bCanGoInSecondary = false;
+
+            auto WorldItemDefinition = static_cast<UFortWorldItemDefinition*>(Params->Pickup->PrimaryPickupItemEntry.ItemDefinition);
+
+            bool Success = false;
+            for (int i = 0; i < ItemInstances.Count; i++)
+            {
+                if (ItemInstances[i]->ItemEntry.ItemDefinition == WorldItemDefinition)
+                {
+                    if (ItemInstances[i]->ItemEntry.Count >= WorldItemDefinition->MaxStackSize)
+                    {
+                        if (WorldItemDefinition->bAllowMultipleStacks)
+                            continue;
+                    }
+
+                    auto newcount = ItemInstances[i]->ItemEntry.Count + Params->Pickup->PrimaryPickupItemEntry.Count;
+                    if (newcount > WorldItemDefinition->MaxStackSize)
+                    {
+                        auto leftover = newcount - WorldItemDefinition->MaxStackSize;
+                        Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
+                        newcount = WorldItemDefinition->MaxStackSize;
+                    }
+
+                    Controller->WorldInventory->Inventory.ItemInstances[i]->ItemEntry.Count = newcount;
+                    Controller->WorldInventory->Inventory.ReplicatedEntries[i].Count = newcount;
+
+                    Update(Controller, i);
+                    Success = true;
+                    break;
+                }
+            }
+
+            if (!Success)
+            {
+                if (!bCanGoInSecondary)
+                {
+                    auto& PrimaryQuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
+
+                    for (int i = 1; i < PrimaryQuickBarSlots.Num(); i++)
+                    {
+                        if (Params->Pickup->IsActorBeingDestroyed() || Params->Pickup->bPickedUp)
+                            return;
+
+                        if (!PrimaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
+                        {
+                            if (i >= 6)
+                            {
+                                auto QuickBars = Controller->QuickBars;
+
+                                auto FocusedSlot = QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
+
+                                if (FocusedSlot == 0) // don't replace the pickaxe
+                                    continue;
+
+                                i = FocusedSlot;
+
+                                FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
+
+                                OnDrop(Controller, FocusedGuid, -1);
+                            }
+
+                            int Idx = 0;
+                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
+
+                            auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
+
+                            Instance->ItemEntry.LoadedAmmo = Params->Pickup->PrimaryPickupItemEntry.LoadedAmmo;
+                            Instance->ItemEntry.Count = Params->Pickup->PrimaryPickupItemEntry.Count;
+
+                            Update(Controller, i);
+
+                            break;
+                        }
+                    }
+                }
+
+                else
+                {
+                    auto& SecondaryQuickBarSlots = Controller->QuickBars->SecondaryQuickBar.Slots;
+
+                    for (int i = 0; i < SecondaryQuickBarSlots.Num(); i++)
+                    {
+                        if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
+                        {
+                            AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup /*, Params->InFlyTime*/);
+        }
     }
 
     static void DumpInventory(AFortPlayerControllerAthena* PlayerController)
@@ -855,7 +868,7 @@ namespace Inventory
         static UFortEditToolItemDefinition* EditTool = UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
         AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
         EquipInventoryItem(PlayerController, pick.ItemGuid);
-
+        PlayerController->SwapQuickBarFocus(EFortQuickBars::Primary);
         PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
     }
 }
