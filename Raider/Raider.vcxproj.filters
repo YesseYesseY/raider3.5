@@ -130,6 +130,9 @@
     <ClInclude Include="GameModes\GameModePlaygroundV2.hpp">
       <Filter>Game\Modes</Filter>
     </ClInclude>
+    <ClInclude Include="GameModes\GameModeSolosNoBuild.hpp">
+      <Filter>Game\Modes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

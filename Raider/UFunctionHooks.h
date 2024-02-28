@@ -59,6 +59,25 @@ namespace UFunctionHooks
             return false;
         })
 
+        DEFINE_PEHOOK("Function FortniteGame.FortWeapon.GameplayCue_Weapons_Activation", {
+            if (!Object->IsA(AB_RCRocket_Launcher_Athena_C::StaticClass()))
+                return false;
+
+            auto Weapon = (AFortWeapon*)Object;
+            auto PlayerPawn = (AFortPlayerPawnAthena*)Weapon->Owner;
+            auto PlayerController = (AFortPlayerControllerAthena*)PlayerPawn->Controller;
+            auto Trans = PlayerPawn->GetTransform();
+            Trans.Translation.Z += 1000;
+            auto RocketPawn = static_cast<AB_PrjPawn_Athena_RCRocket_C*>(Spawners::SpawnActor(AB_PrjPawn_Athena_RCRocket_C::StaticClass(), Trans, nullptr));
+            PlayerController->Possess(RocketPawn);
+
+            // This crashes:
+            // RocketPawn->SetupRemoteControlPawn(PlayerController, PlayerPawn, EFortCustomMovement::RemoteControl_Flying, RocketPawn->EffectContainerSpecToApplyOnKill);
+            
+            
+            return false;
+        })
+
 #ifdef CHEATS
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerCheat", {
             if (Object->IsA(AFortPlayerControllerAthena::StaticClass()))
@@ -69,17 +88,49 @@ namespace UFunctionHooks
                 if (Params && PC && !PC->IsInAircraft())
                 {
                     auto Pawn = (APlayerPawn_Athena_C*)PC->Pawn;
-                    auto Message = Params->Msg.ToString() + ' ';
+                    auto Message = Params->Msg.ToString();
 
                     std::vector<std::string> Arguments;
 
-                    while (Message.find(" ") != -1)
+                    int i = 0;
+                    bool CurrentlyHandlingString = false;
+                    std::string CurrentArg = "";
+                    while (i < Message.size())
                     {
-                        Arguments.push_back(Message.substr(0, Message.find(' ')));
-                        Message.erase(0, Message.find(' ') + 1);
+                        auto CurrentIndex = Message[i];
+                        if (!CurrentlyHandlingString && isspace(CurrentIndex) && CurrentArg != "")
+                        {
+                            Arguments.push_back(CurrentArg);
+                            CurrentArg = "";
+                        }
+                        else if (CurrentIndex == '"')
+                        {
+                            if (!CurrentlyHandlingString)
+                            {
+                                CurrentlyHandlingString = true;
+                            }
+                            else
+                            {
+                                CurrentlyHandlingString = false;
+                                Arguments.push_back(CurrentArg);
+                                CurrentArg = "";
+                            }
+                        }
+                        else
+                        {
+                            CurrentArg += CurrentIndex;
+                        }
+
+                        i++;
                     }
 
-                    auto NumArgs = Arguments.size() - 1;
+                    if (CurrentArg != "")
+                    {
+                        Arguments.push_back(CurrentArg);
+                        CurrentArg = "";
+                    }
+                    
+                    auto NumArgs = Arguments.size();
 
                     if (NumArgs >= 0)
                     {
@@ -89,6 +140,16 @@ namespace UFunctionHooks
                         if (Command == "infammo")
                         {
                             PC->bInfiniteAmmo = !PC->bInfiniteAmmo;
+                        }
+                        else if (Command == "spawnpickup")
+                        {
+                            LOG_INFO("Spawning pickup for {}", Arguments[1]);
+                            auto ItemDef = UObject::FindObject<UFortItemDefinition>(Arguments[1]);
+                            int Count = 1;
+                            if (NumArgs >= 3)
+                                Count = stoi(Arguments[2]);
+                            
+                            Spawners::SummonPickup(Pawn, ItemDef, Count, Pawn->K2_GetActorLocation());
                         }
 
                         else

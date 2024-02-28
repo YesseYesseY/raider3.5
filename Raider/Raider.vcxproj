@@ -129,6 +129,7 @@
     <ClInclude Include="GameModes\GameModeSolos.hpp" />
     <ClInclude Include="GameModes\GameModePlayground.hpp" />
     <ClInclude Include="GameModes\GameMode50v50.hpp" />
+    <ClInclude Include="GameModes\GameModeSolosNoBuild.hpp" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Logger.hpp" />

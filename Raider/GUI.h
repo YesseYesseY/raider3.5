@@ -37,16 +37,13 @@ namespace GUI
 
         if (ZeroGUI::Window(L"Setup", &setuppos, FVector2D{ 500.0f, 700.0f }, menu_opened && !bTraveled))
         {
-            //if (ZeroGUI::Button(L"GameModeSolos", { 100.0f, 25.0f }))
-            //{
-            //    Game::Mode = std::make_unique<GameModeSolos>();
-            //}
             REGISTER_MODE(GameModeSolos)
             REGISTER_MODE(GameModeDuos)
             REGISTER_MODE(GameModePlayground)
             REGISTER_MODE(GameModeLateGame)
             REGISTER_MODE(GameMode50v50)
             REGISTER_MODE(GameModePlaygroundV2)
+            REGISTER_MODE(GameModeSolosNoBuild)
         }
 
         if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
