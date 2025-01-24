@@ -127,9 +127,6 @@ namespace Hooks
 
     void PostRender(SDK::UGameViewportClient* _this, SDK::UCanvas* Canvas)
     {
-        ZeroGUI::SetupCanvas(Canvas);
-        GUI::Tick();
-
         return Native::GameViewportClient::PostRender(_this, Canvas);
     }
 

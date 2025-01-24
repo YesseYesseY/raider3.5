@@ -25,6 +25,9 @@
     <Filter Include="Logic">
       <UniqueIdentifier>{6327dcad-861c-43fb-a4f3-8dc101879591}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UE4\GUI\imgui">
+      <UniqueIdentifier>{2871af5d-1a6d-4e1f-8257-7b8fb4d5dd78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -63,6 +66,27 @@
     </ClCompile>
     <ClCompile Include="SDK\FN_BP_Athena_Event_Components_functions.cpp">
       <Filter>SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_demo.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_draw.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_tables.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_widgets.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_impl_dx9.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Imgui\imgui_impl_win32.cpp">
+      <Filter>UE4\GUI\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +156,30 @@
     </ClInclude>
     <ClInclude Include="GameModes\GameModeSolosNoBuild.hpp">
       <Filter>Game\Modes</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imconfig.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_internal.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_rectpack.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_textedit.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imstb_truetype.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_impl_dx9.h">
+      <Filter>UE4\GUI\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\imgui_impl_win32.h">
+      <Filter>UE4\GUI\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -43,6 +43,8 @@ DWORD WINAPI Main(LPVOID lpParam)
 
     CreateConsole();
 
+    CreateThread(nullptr, 0, GUI::GuiMain, 0, 0, nullptr);
+
     return 0;
 }
 

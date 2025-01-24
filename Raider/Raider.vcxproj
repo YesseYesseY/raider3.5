@@ -108,6 +108,13 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClInclude Include="GameModes\GameModeBase.hpp" />
+    <ClCompile Include="Imgui\imgui.cpp" />
+    <ClCompile Include="Imgui\imgui_demo.cpp" />
+    <ClCompile Include="Imgui\imgui_draw.cpp" />
+    <ClCompile Include="Imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="Imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="Imgui\imgui_tables.cpp" />
+    <ClCompile Include="Imgui\imgui_widgets.cpp" />
     <ClCompile Include="SDK\FN_Athena_PlayerController_functions.cpp" />
     <ClCompile Include="SDK\FN_Basic.cpp" />
     <ClCompile Include="SDK\FN_BP_Athena_Event_Components_functions.cpp" />
@@ -132,6 +139,14 @@
     <ClInclude Include="GameModes\GameModeSolosNoBuild.hpp" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Hooks.h" />
+    <ClInclude Include="Imgui\imconfig.h" />
+    <ClInclude Include="Imgui\imgui.h" />
+    <ClInclude Include="Imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="Imgui\imgui_impl_win32.h" />
+    <ClInclude Include="Imgui\imgui_internal.h" />
+    <ClInclude Include="Imgui\imstb_rectpack.h" />
+    <ClInclude Include="Imgui\imstb_textedit.h" />
+    <ClInclude Include="Imgui\imstb_truetype.h" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Logic\Building.h" />
     <ClInclude Include="Native.h" />
