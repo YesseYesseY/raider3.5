@@ -7,7 +7,7 @@
 
 namespace Hooks
 {
-    bool LocalPlayerSpawnPlayActor(ULocalPlayer* Player, const FString& URL, FString& OutError, UWorld* World)
+    bool LocalPlayerSpawnPlayActor(SDK::ULocalPlayer* Player, const SDK::FString& URL, SDK::FString& OutError, SDK::UWorld* World)
     {
         if (!bTraveled)
         {
@@ -16,12 +16,12 @@ namespace Hooks
         return true;
     }
 
-    void TickFlush(UNetDriver* NetDriver, float DeltaSeconds)
+    void TickFlush(SDK::UNetDriver* NetDriver, float DeltaSeconds)
     {
         if (!NetDriver)
             return;
 
-        if (NetDriver->IsA(UIpNetDriver::StaticClass()) && NetDriver->ClientConnections.Num() > 0 && NetDriver->ClientConnections[0]->InternalAck == false)
+        if (NetDriver->IsA(SDK::UIpNetDriver::StaticClass()) && NetDriver->ClientConnections.Num() > 0 && NetDriver->ClientConnections[0]->InternalAck == false)
         {
             // Replication::ServerReplicateActors(NetDriver);
             if (NetDriver->ReplicationDriver)
@@ -33,23 +33,23 @@ namespace Hooks
         Native::NetDriver::TickFlush(NetDriver, DeltaSeconds);
     }
 
-    uint8 Beacon_NotifyAcceptingConnection(AOnlineBeacon*) { return Native::World::NotifyAcceptingConnection(GetWorld()); }
-    void* SeamlessTravelHandlerForWorld(UEngine* Engine, UWorld*) { return Native::Engine::SeamlessTravelHandlerForWorld(Engine, GetWorld()); }
-    void* NetDebug(UObject*) { return nullptr; }
+    uint8 Beacon_NotifyAcceptingConnection(SDK::AOnlineBeacon*) { return Native::World::NotifyAcceptingConnection(GetWorld()); }
+    void* SeamlessTravelHandlerForWorld(SDK::UEngine* Engine, SDK::UWorld*) { return Native::Engine::SeamlessTravelHandlerForWorld(Engine, GetWorld()); }
+    void* NetDebug(SDK::UObject*) { return nullptr; }
     __int64 CollectGarbage(__int64) { return 0; }
-    void WelcomePlayer(UWorld*, UNetConnection* IncomingConnection) { Native::World::WelcomePlayer(GetWorld(), IncomingConnection); }
+    void WelcomePlayer(SDK::UWorld*, SDK::UNetConnection* IncomingConnection) { Native::World::WelcomePlayer(GetWorld(), IncomingConnection); }
     char KickPlayer(__int64, __int64, __int64) { return 0; }
-    uint64 GetNetMode(UWorld*) { return NM_ListenServer; }
-    void World_NotifyControlMessage(UWorld*, UNetConnection* Connection, uint8 MessageType, void* Bunch) { Native::World::NotifyControlMessage(GetWorld(), Connection, MessageType, Bunch); }
+    uint64 GetNetMode(SDK::UWorld*) { return NM_ListenServer; }
+    void World_NotifyControlMessage(SDK::UWorld*, SDK::UNetConnection* Connection, uint8 MessageType, void* Bunch) { Native::World::NotifyControlMessage(GetWorld(), Connection, MessageType, Bunch); }
 
-    void __fastcall ReloadThing(AFortWeapon* Weapon, uint32_t AmountToRemove)
+    void __fastcall ReloadThing(SDK::AFortWeapon* Weapon, uint32_t AmountToRemove)
     {
-        auto ammodef = (UFortAmmoItemDefinition*)UObject::GObjects->GetByIndex(((*(TSoftObjectPtr<UObject*>*)&Weapon->WeaponData->UnknownData10).WeakPtr.ObjectIndex));
-        auto pawn = (APawn*)Weapon->Owner;
-        auto controller = (AFortPlayerController*)pawn->Controller;
+        auto ammodef = (SDK::UFortAmmoItemDefinition*)SDK::UObject::GObjects->GetByIndex(((*(SDK::TSoftObjectPtr<SDK::UObject*>*)&Weapon->WeaponData->UnknownData10).WeakPtr.ObjectIndex));
+        auto pawn = (SDK::APawn*)Weapon->Owner;
+        auto controller = (SDK::AFortPlayerController*)pawn->Controller;
         if (!controller->bInfiniteAmmo)
         {
-            if (!Inventory::TryRemoveItem((AFortPlayerControllerAthena*)pawn->Controller, ammodef, AmountToRemove))
+            if (!Inventory::TryRemoveItem((SDK::AFortPlayerControllerAthena*)pawn->Controller, ammodef, AmountToRemove))
             {
                 LOG_ERROR("Failed to remove ammo from user");
             }
@@ -57,11 +57,11 @@ namespace Hooks
         //return Native::Inventory::ReloadThing(Weapon, AmountToRemove);
     }
 
-    void __fastcall GetPlayerViewPoint(APlayerController* pc, FVector* a2, FRotator* a3)
+    void __fastcall GetPlayerViewPoint(SDK::APlayerController* pc, SDK::FVector* a2, SDK::FRotator* a3)
     {
         if (pc && HostBeacon && HostBeacon->NetDriver && HostBeacon->NetDriver->ClientConnections.Num() > 0)
         {
-            AActor* TheViewTarget = pc->GetViewTarget();
+            SDK::AActor* TheViewTarget = pc->GetViewTarget();
 
             if (TheViewTarget)
             {
@@ -80,9 +80,9 @@ namespace Hooks
             return Native::PlayerController::GetPlayerViewPoint(pc, a2, a3);
     }
 
-    APlayerController* SpawnPlayActor(UWorld*, UPlayer* NewPlayer, ENetRole RemoteRole, FURL& URL, void* UniqueId, FString& Error, uint8 NetPlayerIndex)
+    SDK::APlayerController* SpawnPlayActor(SDK::UWorld*, SDK::UPlayer* NewPlayer, SDK::ENetRole RemoteRole, SDK::FURL& URL, void* UniqueId, SDK::FString& Error, uint8 NetPlayerIndex)
     {
-        auto PlayerController = static_cast<AFortPlayerControllerAthena*>(Native::World::SpawnPlayActor(GetWorld(), NewPlayer, RemoteRole, URL, UniqueId, Error, NetPlayerIndex));
+        auto PlayerController = static_cast<SDK::AFortPlayerControllerAthena*>(Native::World::SpawnPlayActor(GetWorld(), NewPlayer, RemoteRole, URL, UniqueId, Error, NetPlayerIndex));
         NewPlayer->PlayerController = PlayerController;
 
         Game::Mode->LoadJoiningPlayer(PlayerController);
@@ -91,7 +91,7 @@ namespace Hooks
         return PlayerController;
     }
 
-    void Beacon_NotifyControlMessage(AOnlineBeaconHost*, UNetConnection* Connection, uint8 MessageType, int64* Bunch)
+    void Beacon_NotifyControlMessage(SDK::AOnlineBeaconHost*, SDK::UNetConnection* Connection, uint8 MessageType, int64* Bunch)
     {
         switch (MessageType)
         {
@@ -105,7 +105,7 @@ namespace Hooks
 
             Bunch[7] += (16 * 1024 * 1024);
 
-            auto OnlinePlatformName = FString(L"");
+            auto OnlinePlatformName = SDK::FString(L"");
 
             Native::NetConnection::ReceiveFString(Bunch, Connection->ClientResponse);
             Native::NetConnection::ReceiveFString(Bunch, Connection->RequestURL);
@@ -125,7 +125,7 @@ namespace Hooks
         Native::World::NotifyControlMessage(GetWorld(), Connection, MessageType, Bunch);
     }
 
-    void PostRender(UGameViewportClient* _this, UCanvas* Canvas)
+    void PostRender(SDK::UGameViewportClient* _this, SDK::UCanvas* Canvas)
     {
         ZeroGUI::SetupCanvas(Canvas);
         GUI::Tick();
@@ -146,7 +146,7 @@ namespace Hooks
         DETOUR_END
     }
 
-    void ProcessEventHook(UObject* Object, UFunction* Function, void* Parameters)
+    void ProcessEventHook(SDK::UObject* Object, SDK::UFunction* Function, void* Parameters)
     {
         if (bTraveled)
         {

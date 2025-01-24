@@ -18,16 +18,16 @@ namespace Game
     void OnReadyToStartMatch()
     {
         LOG_INFO("Initializing the match for the server!");
-        auto GameState = reinterpret_cast<AAthena_GameState_C*>(GetWorld()->GameState);
-        auto GameMode = reinterpret_cast<AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
+        auto GameState = reinterpret_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState);
+        auto GameMode = reinterpret_cast<SDK::AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
         auto InProgress = GetKismetString()->STATIC_Conv_StringToName(L"InProgress");
 
         GameState->bGameModeWillSkipAircraft = true;
         GameState->AircraftStartTime = 9999.9f;
         GameState->WarmupCountdownEndTime = 99999.9f;
 
-        GameState->GamePhase = EAthenaGamePhase::Warmup;
-        GameState->OnRep_GamePhase(EAthenaGamePhase::None);
+        GameState->GamePhase = SDK::EAthenaGamePhase::Warmup;
+        GameState->OnRep_GamePhase(SDK::EAthenaGamePhase::None);
 
         GameMode->bDisableGCOnServerDuringMatch = true;
         GameMode->bAllowSpectateAfterDeath = true;
@@ -47,23 +47,23 @@ namespace Game
         GameMode->bWorldIsReady = true;
     }
 
-    auto GetDeathCause(FFortPlayerDeathReport DeathReport)
+    auto GetDeathCause(SDK::FFortPlayerDeathReport DeathReport)
     {
-        static std::map<std::string, EDeathCause> DeathCauses {
-            { "weapon.ranged.shotgun", EDeathCause::Shotgun },
-            { "weapon.ranged.assault", EDeathCause::Rifle },
-            { "Gameplay.Damage.Environment.Falling", EDeathCause::FallDamage },
-            { "weapon.ranged.sniper", EDeathCause::Sniper },
-            { "Weapon.Ranged.SMG", EDeathCause::SMG },
-            { "weapon.ranged.heavy.rocket_launcher", EDeathCause::RocketLauncher },
-            { "weapon.ranged.heavy.grenade_launcher", EDeathCause::GrenadeLauncher },
-            { "Weapon.ranged.heavy.grenade", EDeathCause::Grenade },
-            { "Weapon.Ranged.Heavy.Minigun", EDeathCause::Minigun },
-            { "Weapon.Ranged.Crossbow", EDeathCause::Bow },
-            { "trap.floor", EDeathCause::Trap },
-            { "weapon.ranged.pistol", EDeathCause::Pistol },
-            { "Gameplay.Damage.OutsideSafeZone", EDeathCause::OutsideSafeZone },
-            { "Weapon.Melee.Impact.Pickaxe", EDeathCause::Melee }
+        static std::map<std::string, SDK::EDeathCause> DeathCauses {
+            { "weapon.ranged.shotgun", SDK::EDeathCause::Shotgun },
+            { "weapon.ranged.assault", SDK::EDeathCause::Rifle },
+            { "Gameplay.Damage.Environment.Falling", SDK::EDeathCause::FallDamage },
+            { "weapon.ranged.sniper", SDK::EDeathCause::Sniper },
+            { "Weapon.Ranged.SMG", SDK::EDeathCause::SMG },
+            { "weapon.ranged.heavy.rocket_launcher", SDK::EDeathCause::RocketLauncher },
+            { "weapon.ranged.heavy.grenade_launcher", SDK::EDeathCause::GrenadeLauncher },
+            { "Weapon.ranged.heavy.grenade", SDK::EDeathCause::Grenade },
+            { "Weapon.Ranged.Heavy.Minigun", SDK::EDeathCause::Minigun },
+            { "Weapon.Ranged.Crossbow", SDK::EDeathCause::Bow },
+            { "trap.floor", SDK::EDeathCause::Trap },
+            { "weapon.ranged.pistol", SDK::EDeathCause::Pistol },
+            { "Gameplay.Damage.OutsideSafeZone", SDK::EDeathCause::OutsideSafeZone },
+            { "Weapon.Melee.Impact.Pickaxe", SDK::EDeathCause::Melee }
         };
 
         for (int i = 0; i < DeathReport.Tags.GameplayTags.Num(); i++)
@@ -72,26 +72,28 @@ namespace Game
 
             for (auto Map : DeathCauses)
             {
-                if (TagName == Map.first) return Map.second;
-                else continue;
+                if (TagName == Map.first)
+                    return Map.second;
+                else
+                    continue;
             }
         }
 
-        return EDeathCause::Unspecified;
+        return SDK::EDeathCause::Unspecified;
     }
 
     // Can't be in utils 
-    static UFortResourceItemDefinition* EFortResourceTypeToItemDef(EFortResourceType ResourceType)
+    static SDK::UFortResourceItemDefinition* EFortResourceTypeToItemDef(SDK::EFortResourceType ResourceType)
     {
-        UFortResourceItemDefinition* ret = nullptr;
-        if (ResourceType == EFortResourceType::Wood)
-            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->WoodItemDefinition;
-        else if (ResourceType == EFortResourceType::Stone)
-            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->StoneItemDefinition;
-        else if (ResourceType == EFortResourceType::Metal)
-            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->MetalItemDefinition;
-        else if (ResourceType == EFortResourceType::Permanite)
-            ret = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->GameData->PermaniteItemDefinition;
+        SDK::UFortResourceItemDefinition* ret = nullptr;
+        if (ResourceType == SDK::EFortResourceType::Wood)
+            ret = static_cast<SDK::UFortAssetManager*>(GetEngine()->AssetManager)->GameData->WoodItemDefinition;
+        else if (ResourceType == SDK::EFortResourceType::Stone)
+            ret = static_cast<SDK::UFortAssetManager*>(GetEngine()->AssetManager)->GameData->StoneItemDefinition;
+        else if (ResourceType == SDK::EFortResourceType::Metal)
+            ret = static_cast<SDK::UFortAssetManager*>(GetEngine()->AssetManager)->GameData->MetalItemDefinition;
+        else if (ResourceType == SDK::EFortResourceType::Permanite)
+            ret = static_cast<SDK::UFortAssetManager*>(GetEngine()->AssetManager)->GameData->PermaniteItemDefinition;
         return ret;
     }
 }

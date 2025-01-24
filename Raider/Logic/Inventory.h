@@ -6,7 +6,7 @@
 // Pretty sure most of this needs a rework
 namespace Inventory
 {
-    static void Update(AFortPlayerController* Controller, int Dirty = 0, bool bRemovedItem = false)
+    static void Update(SDK::AFortPlayerController* Controller, int Dirty = 0, bool bRemovedItem = false)
     {
         Controller->WorldInventory->bRequiresLocalUpdate = true;
         Controller->WorldInventory->HandleInventoryLocalUpdate();
@@ -16,8 +16,8 @@ namespace Inventory
         Controller->QuickBars->OnRep_PrimaryQuickBar();
         Controller->QuickBars->OnRep_SecondaryQuickBar();
         Controller->QuickBars->ForceNetUpdate();
-        Controller->ForceUpdateQuickbar(EFortQuickBars::Primary);
-        Controller->ForceUpdateQuickbar(EFortQuickBars::Secondary);
+        Controller->ForceUpdateQuickbar(SDK::EFortQuickBars::Primary);
+        Controller->ForceUpdateQuickbar(SDK::EFortQuickBars::Secondary);
 
         if (bRemovedItem)
             Controller->WorldInventory->Inventory.MarkArrayDirty();
@@ -26,7 +26,7 @@ namespace Inventory
             Controller->WorldInventory->Inventory.MarkItemDirty(Controller->WorldInventory->Inventory.ReplicatedEntries[Dirty]);
     }
 
-    static bool IsValidGuid(AFortPlayerControllerAthena* Controller, const FGuid& Guid)
+    static bool IsValidGuid(SDK::AFortPlayerControllerAthena* Controller, const SDK::FGuid& Guid)
     {
         auto& QuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
 
@@ -47,20 +47,20 @@ namespace Inventory
         return false;
     }
 
-    static FFortItemEntry GetEntryInSlot(AFortPlayerControllerAthena* Controller, int Slot, int Item = 0, EFortQuickBars QuickBars = EFortQuickBars::Primary)
+    static SDK::FFortItemEntry GetEntryInSlot(SDK::AFortPlayerControllerAthena* Controller, int Slot, int Item = 0, SDK::EFortQuickBars QuickBars = SDK::EFortQuickBars::Primary)
     {
-        auto ret = FFortItemEntry();
+        auto ret = SDK::FFortItemEntry();
 
         auto& ItemInstances = Controller->WorldInventory->Inventory.ItemInstances;
 
-        FGuid ToFindGuid;
+        SDK::FGuid ToFindGuid;
 
-        if (QuickBars == EFortQuickBars::Primary)
+        if (QuickBars == SDK::EFortQuickBars::Primary)
         {
             ToFindGuid = Controller->QuickBars->PrimaryQuickBar.Slots[Slot].Items[Item];
         }
 
-        else if (QuickBars == EFortQuickBars::Secondary)
+        else if (QuickBars == SDK::EFortQuickBars::Secondary)
         {
             ToFindGuid = Controller->QuickBars->SecondaryQuickBar.Slots[Slot].Items[Item];
         }
@@ -81,14 +81,14 @@ namespace Inventory
         return ret;
     }
 
-    inline auto GetDefinitionInSlot(AFortPlayerControllerAthena* Controller, int Slot, int Item = 0, EFortQuickBars QuickBars = EFortQuickBars::Primary)
+    inline auto GetDefinitionInSlot(SDK::AFortPlayerControllerAthena* Controller, int Slot, int Item = 0, SDK::EFortQuickBars QuickBars = SDK::EFortQuickBars::Primary)
     {
         return GetEntryInSlot(Controller, Slot, Item, QuickBars).ItemDefinition;
     }
 
-    static UFortWorldItem* GetInstanceFromGuid(AController* PC, const FGuid& ToFindGuid, int* index = nullptr)
+    static SDK::UFortWorldItem* GetInstanceFromGuid(SDK::AController* PC, const SDK::FGuid& ToFindGuid, int* index = nullptr)
     {
-        auto& ItemInstances = static_cast<AFortPlayerController*>(PC)->WorldInventory->Inventory.ItemInstances;
+        auto& ItemInstances = static_cast<SDK::AFortPlayerController*>(PC)->WorldInventory->Inventory.ItemInstances;
 
         for (int j = 0; j < ItemInstances.Num(); j++)
         {
@@ -110,11 +110,11 @@ namespace Inventory
         return nullptr;
     }
 
-    static auto AddItemToSlot(AFortPlayerControllerAthena* Controller, UFortWorldItemDefinition* Definition, int Slot, EFortQuickBars Bars = EFortQuickBars::Primary, int Count = 1, int* Idx = nullptr)
+    static auto AddItemToSlot(SDK::AFortPlayerControllerAthena* Controller, SDK::UFortWorldItemDefinition* Definition, int Slot, SDK::EFortQuickBars Bars = SDK::EFortQuickBars::Primary, int Count = 1, int* Idx = nullptr)
     {
-        auto ret = FFortItemEntry();
+        auto ret = SDK::FFortItemEntry();
 
-        if (Definition->IsA(UFortWeaponItemDefinition::StaticClass()))
+        if (Definition->IsA(SDK::UFortWeaponItemDefinition::StaticClass()))
         {
             Count = 1;
         }
@@ -124,12 +124,12 @@ namespace Inventory
             Slot = 1;
         }
 
-        if (Bars == EFortQuickBars::Primary && Slot >= 6)
+        if (Bars == SDK::EFortQuickBars::Primary && Slot >= 6)
         {
             Slot = 5;
         }
 
-        if (auto TempItemInstance = static_cast<UFortWorldItem*>(Definition->CreateTemporaryItemInstanceBP(Count, 1)))
+        if (auto TempItemInstance = static_cast<SDK::UFortWorldItem*>(Definition->CreateTemporaryItemInstanceBP(Count, 1)))
         {
             TempItemInstance->SetOwningControllerForTemporaryItem(Controller);
 
@@ -154,12 +154,12 @@ namespace Inventory
         return ret;
     }
 
-    static bool RemoveItemFromSlot(AFortPlayerControllerAthena* Controller, int Slot, EFortQuickBars Quickbars = EFortQuickBars::Primary, int Amount = -1) // -1 for all items in the slot
+    static bool RemoveItemFromSlot(SDK::AFortPlayerControllerAthena* Controller, int Slot, SDK::EFortQuickBars Quickbars = SDK::EFortQuickBars::Primary, int Amount = -1) // -1 for all items in the slot
     {
         auto& PrimarySlots = Controller->QuickBars->PrimaryQuickBar.Slots;
         auto& SecondarySlots = Controller->QuickBars->SecondaryQuickBar.Slots;
 
-        bool bPrimaryQuickBar = (Quickbars == EFortQuickBars::Primary);
+        bool bPrimaryQuickBar = (Quickbars == SDK::EFortQuickBars::Primary);
 
         if (Amount == -1)
         {
@@ -227,7 +227,7 @@ namespace Inventory
         return bWasSuccessful;
     }
 
-    static bool IsGuidInInventory(AFortPlayerControllerAthena* Controller, const FGuid& Guid)
+    static bool IsGuidInInventory(SDK::AFortPlayerControllerAthena* Controller, const SDK::FGuid& Guid)
     {
         auto& QuickBarSlots = Controller->QuickBars->PrimaryQuickBar.Slots;
 
@@ -248,35 +248,35 @@ namespace Inventory
         return false;
     }
 
-    static AFortWeapon* EquipWeaponDefinition(APawn* dPawn, UFortWeaponItemDefinition* Definition, const FGuid& Guid, int Ammo = -1, bool bEquipWithMaxAmmo = false) // don't use, use EquipInventoryItem // not too secure
+    static SDK::AFortWeapon* EquipWeaponDefinition(SDK::APawn* dPawn, SDK::UFortWeaponItemDefinition* Definition, const SDK::FGuid& Guid, int Ammo = -1, bool bEquipWithMaxAmmo = false) // don't use, use EquipInventoryItem // not too secure
     {
-        AFortWeapon* Weapon = nullptr;
+        SDK::AFortWeapon* Weapon = nullptr;
 
         auto weaponClass = Definition->GetWeaponActorClass();
-        auto Pawn = static_cast<APlayerPawn_Athena_C*>(dPawn);
+        auto Pawn = static_cast<SDK::APlayerPawn_Athena_C*>(dPawn);
 
         if (Pawn && Definition && weaponClass)
         {
-            auto Controller = static_cast<AFortPlayerControllerAthena*>(Pawn->Controller);
+            auto Controller = static_cast<SDK::AFortPlayerControllerAthena*>(Pawn->Controller);
             auto Instance = GetInstanceFromGuid(Controller, Guid);
 
             if (!Inventory::IsGuidInInventory(Controller, Guid))
                 return Weapon;
 
-            if (weaponClass == ATrapTool_C::StaticClass() || weaponClass == ATrapTool_ContextTrap_Athena_C::StaticClass() || weaponClass == AFortDecoTool_ContextTrap::StaticClass())
+            if (weaponClass == SDK::ATrapTool_C::StaticClass() || weaponClass == SDK::ATrapTool_ContextTrap_Athena_C::StaticClass() || weaponClass == SDK::AFortDecoTool_ContextTrap::StaticClass())
             {
-                Weapon = static_cast<AFortWeapon*>(Spawners::SpawnActor(weaponClass, {}, Pawn)); // Other people can't see their weapon.
+                Weapon = static_cast<SDK::AFortWeapon*>(Spawners::SpawnActor(weaponClass, {}, Pawn)); // Other people can't see their weapon.
 
                 if (Weapon)
                 {
                     Weapon->bReplicates = true;
                     Weapon->bOnlyRelevantToOwner = false;
                     
-                    if (Definition->IsA(UFortContextTrapItemDefinition::StaticClass()))
+                    if (Definition->IsA(SDK::UFortContextTrapItemDefinition::StaticClass()))
                     {
-                        static_cast<AFortDecoTool_ContextTrap*>(Weapon)->ContextTrapItemDefinition = (UFortContextTrapItemDefinition*)Definition;
+                        static_cast<SDK::AFortDecoTool_ContextTrap*>(Weapon)->ContextTrapItemDefinition = (SDK::UFortContextTrapItemDefinition*)Definition;
                     }
-                    static_cast<AFortTrapTool*>(Weapon)->ItemDefinition = Definition;
+                    static_cast<SDK::AFortTrapTool*>(Weapon)->ItemDefinition = Definition;
                 }
             }
             else
@@ -312,7 +312,7 @@ namespace Inventory
         return Weapon;
     }
 
-    static void EquipInventoryItem(AFortPlayerControllerAthena* PC, FGuid& Guid)
+    static void EquipInventoryItem(SDK::AFortPlayerControllerAthena* PC, SDK::FGuid& Guid)
     {
         if (!PC || PC->IsInAircraft())
             return;
@@ -326,7 +326,7 @@ namespace Inventory
             if (!CurrentItemInstance)
                 continue;
 
-            auto Def = static_cast<UFortWeaponItemDefinition*>(CurrentItemInstance->GetItemDefinitionBP());
+            auto Def = static_cast<SDK::UFortWeaponItemDefinition*>(CurrentItemInstance->GetItemDefinitionBP());
 
             if (CurrentItemInstance->GetItemGuid() == Guid && Def)
             {
@@ -336,9 +336,9 @@ namespace Inventory
         }
     }
 
-    void EquipLoadout(AFortPlayerControllerAthena* Controller, PlayerLoadout WIDS)
+    void EquipLoadout(SDK::AFortPlayerControllerAthena* Controller, PlayerLoadout WIDS)
     {
-        FFortItemEntry pickaxeEntry;
+        SDK::FFortItemEntry pickaxeEntry;
 
         for (int i = 0; i < WIDS.size(); i++)
         {
@@ -364,7 +364,7 @@ namespace Inventory
         EquipInventoryItem(Controller, pickaxeEntry.ItemGuid);
     }
 
-    inline void PickupAnim(AFortPawn* Pawn, AFortPickup* Pickup, float FlyTime = 0.40f)
+    inline void PickupAnim(SDK::AFortPawn* Pawn, SDK::AFortPickup* Pickup, float FlyTime = 0.40f)
     {
         Pickup->ForceNetUpdate();
         Pickup->PickupLocationData.PickupTarget = Pawn;
@@ -376,7 +376,7 @@ namespace Inventory
         Pickup->OnRep_bPickedUp();
     }
 
-    static bool CanPickup(AFortPlayerControllerAthena* Controller, AFortPickup* Pickup)
+    static bool CanPickup(SDK::AFortPlayerControllerAthena* Controller, SDK::AFortPickup* Pickup)
     {
         if (Pickup->PawnWhoDroppedPickup == Controller->Pawn)
             return false;
@@ -400,9 +400,9 @@ namespace Inventory
     }
 
     template <typename Class>
-    static FFortItemEntry FindItemInInventory(AFortPlayerControllerAthena* PC, bool& bFound)
+    static SDK::FFortItemEntry FindItemInInventory(SDK::AFortPlayerControllerAthena* PC, bool& bFound)
     {
-        auto ret = FFortItemEntry();
+        auto ret = SDK::FFortItemEntry();
 
         auto& ItemInstances = PC->WorldInventory->Inventory.ItemInstances;
 
@@ -427,7 +427,7 @@ namespace Inventory
         return ret;
     }
 
-    static void EquipNextValidSlot(AFortPlayerControllerAthena* PlayerController)
+    static void EquipNextValidSlot(SDK::AFortPlayerControllerAthena* PlayerController)
     {
         /*bool Success = false;
         for (int i = PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot + 1; i < PlayerController->QuickBars->PrimaryQuickBar.Slots.Count; i++)
@@ -450,7 +450,7 @@ namespace Inventory
 
     }
 
-    static bool TryDeleteItem(AFortPlayerControllerAthena* PlayerController, int Index)
+    static bool TryDeleteItem(SDK::AFortPlayerControllerAthena* PlayerController, int Index)
     {
         auto guid = PlayerController->WorldInventory->Inventory.ItemInstances[Index]->GetItemGuid();
         PlayerController->WorldInventory->Inventory.ItemInstances.RemoveAt(Index);
@@ -497,7 +497,7 @@ namespace Inventory
         if (slot != -1)
         {
             PlayerController->QuickBars->ServerRemoveItemInternal(guid, false, true);
-            PlayerController->QuickBars->EmptySlot(primary ? EFortQuickBars::Primary : EFortQuickBars::Secondary, slot);
+            PlayerController->QuickBars->EmptySlot(primary ? SDK::EFortQuickBars::Primary : SDK::EFortQuickBars::Secondary, slot);
             if (primary)
                 PlayerController->QuickBars->PrimaryQuickBar.Slots[slot].Items.FreeArray();
             else
@@ -515,7 +515,7 @@ namespace Inventory
         return true;
     }
 
-    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, FGuid Guid, int AmountToRemove)
+    static bool TryRemoveItem(SDK::AFortPlayerControllerAthena* PlayerController, SDK::FGuid Guid, int AmountToRemove)
     {
         int index = 0;
         auto instance = GetInstanceFromGuid(PlayerController, Guid, &index);
@@ -539,7 +539,7 @@ namespace Inventory
         return true;
     }
 
-    static bool TryRemoveItem(AFortPlayerControllerAthena* PlayerController, UFortItemDefinition* ItemDef, int AmountToRemove, bool focusedPrio = true)
+    static bool TryRemoveItem(SDK::AFortPlayerControllerAthena* PlayerController, SDK::UFortItemDefinition* ItemDef, int AmountToRemove, bool focusedPrio = true)
     {
         auto& ItemInstances = PlayerController->WorldInventory->Inventory.ItemInstances;
 
@@ -547,7 +547,7 @@ namespace Inventory
             return false;
         bool success = false;
 
-        FGuid FocusedGuid = FGuid();
+        SDK::FGuid FocusedGuid = SDK::FGuid();
         if (focusedPrio)
         {
             auto FocusedSlotIndex = PlayerController->QuickBars->PrimaryQuickBar.CurrentFocusedSlot;
@@ -563,7 +563,7 @@ namespace Inventory
             }
         }
 
-        if (FocusedGuid != FGuid())
+        if (FocusedGuid != SDK::FGuid())
         {
             success = TryRemoveItem(PlayerController, FocusedGuid, AmountToRemove);
         }
@@ -583,7 +583,7 @@ namespace Inventory
         return success;
     }
 
-    static bool OnDrop(AFortPlayerControllerAthena* Controller, FGuid ItemGuid, int Count)
+    static bool OnDrop(SDK::AFortPlayerControllerAthena* Controller, SDK::FGuid ItemGuid, int Count)
     {
         if (!Controller)
             return false;
@@ -601,9 +601,9 @@ namespace Inventory
 
         if (bWasSuccessful)
         {
-            auto Pickup = Spawners::SummonPickup(static_cast<AFortPlayerPawn*>(Controller->Pawn), Definition, Count, Controller->Pawn->K2_GetActorLocation());
+            auto Pickup = Spawners::SummonPickup(static_cast<SDK::AFortPlayerPawn*>(Controller->Pawn), Definition, Count, Controller->Pawn->K2_GetActorLocation());
             Pickup->PrimaryPickupItemEntry.LoadedAmmo = LoadedAmmo;
-            Pickup->PawnWhoDroppedPickup = (AFortPlayerPawn*)Controller->Pawn;
+            Pickup->PawnWhoDroppedPickup = (SDK::AFortPlayerPawn*)Controller->Pawn;
         }
         //
         //if (bWasSuccessful && Controller->QuickBars->PrimaryQuickBar.Slots[0].Items.Data)
@@ -612,9 +612,9 @@ namespace Inventory
         return bWasSuccessful;
     }
 
-    inline void OnPickup(AFortPlayerControllerAthena* Controller, void* params)
+    inline void OnPickup(SDK::AFortPlayerControllerAthena* Controller, void* params)
     {
-        auto Params = static_cast<AFortPlayerPawn_ServerHandlePickup_Params*>(params);
+        auto Params = static_cast<SDK::AFortPlayerPawn_ServerHandlePickup_Params*>(params);
 
         if (!Controller || !Params)
             return;
@@ -625,10 +625,10 @@ namespace Inventory
         {
             bool bCanGoInSecondary = true; // there is no way this is how you do it // todo: rename
 
-            if (Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortWeaponItemDefinition::StaticClass()) && !Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(UFortDecoItemDefinition::StaticClass()))
+            if (Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(SDK::UFortWeaponItemDefinition::StaticClass()) && !Params->Pickup->PrimaryPickupItemEntry.ItemDefinition->IsA(SDK::UFortDecoItemDefinition::StaticClass()))
                 bCanGoInSecondary = false;
 
-            auto WorldItemDefinition = static_cast<UFortWorldItemDefinition*>(Params->Pickup->PrimaryPickupItemEntry.ItemDefinition);
+            auto WorldItemDefinition = static_cast<SDK::UFortWorldItemDefinition*>(Params->Pickup->PrimaryPickupItemEntry.ItemDefinition);
 
             bool Success = false;
             for (int i = 0; i < ItemInstances.Count; i++)
@@ -645,7 +645,7 @@ namespace Inventory
                     if (newcount > WorldItemDefinition->MaxStackSize)
                     {
                         auto leftover = newcount - WorldItemDefinition->MaxStackSize;
-                        Spawners::SummonPickup(static_cast<APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
+                        Spawners::SummonPickup(static_cast<SDK::APlayerPawn_Athena_C*>(Controller->Pawn), WorldItemDefinition, leftover, Controller->Pawn->K2_GetActorLocation());
                         newcount = WorldItemDefinition->MaxStackSize;
                     }
 
@@ -682,13 +682,13 @@ namespace Inventory
 
                                 i = FocusedSlot;
 
-                                FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
+                                SDK::FGuid& FocusedGuid = PrimaryQuickBarSlots[FocusedSlot].Items[0];
 
                                 OnDrop(Controller, FocusedGuid, -1);
                             }
 
                             int Idx = 0;
-                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
+                            auto entry = AddItemToSlot(Controller, WorldItemDefinition, i, SDK::EFortQuickBars::Primary, Params->Pickup->PrimaryPickupItemEntry.Count, &Idx);
 
                             auto Instance = GetInstanceFromGuid(Controller, entry.ItemGuid);
 
@@ -710,18 +710,18 @@ namespace Inventory
                     {
                         if (!SecondaryQuickBarSlots[i].Items.Data) // Checks if the slot is empty
                         {
-                            AddItemToSlot(Controller, WorldItemDefinition, i, EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
+                            AddItemToSlot(Controller, WorldItemDefinition, i, SDK::EFortQuickBars::Secondary, Params->Pickup->PrimaryPickupItemEntry.Count);
                             break;
                         }
                     }
                 }
             }
 
-            PickupAnim((AFortPawn*)Controller->Pawn, Params->Pickup /*, Params->InFlyTime*/);
+            PickupAnim((SDK::AFortPawn*)Controller->Pawn, Params->Pickup /*, Params->InFlyTime*/);
         }
     }
 
-    static void DumpInventory(AFortPlayerControllerAthena* PlayerController)
+    static void DumpInventory(SDK::AFortPlayerControllerAthena* PlayerController)
     {
         LOG_INFO("Dumping ({})", PlayerController->PlayerState->GetPlayerName().ToString());
         LOG_INFO("ItemInstances:");
@@ -785,7 +785,7 @@ namespace Inventory
         }
     }
 
-    static void EmptyInventory(AFortPlayerControllerAthena* PlayerController)
+    static void EmptyInventory(SDK::AFortPlayerControllerAthena* PlayerController)
     {
         int i = 0;
         while (i < PlayerController->WorldInventory->Inventory.ItemInstances.Count)
@@ -793,7 +793,7 @@ namespace Inventory
             auto ItemInstance = PlayerController->WorldInventory->Inventory.ItemInstances[i];
             auto ItemDef = ItemInstance->ItemEntry.ItemDefinition;
 
-            if (!ItemDef->IsA(UFortEditToolItemDefinition::StaticClass()) && !ItemDef->IsA(UFortWeaponMeleeItemDefinition::StaticClass()) && !ItemDef->IsA(UFortBuildingItemDefinition::StaticClass()))
+            if (!ItemDef->IsA(SDK::UFortEditToolItemDefinition::StaticClass()) && !ItemDef->IsA(SDK::UFortWeaponMeleeItemDefinition::StaticClass()) && !ItemDef->IsA(SDK::UFortBuildingItemDefinition::StaticClass()))
             {
                 TryDeleteItem(PlayerController, i);
             }
@@ -806,58 +806,58 @@ namespace Inventory
         Update(PlayerController, 0, true);
     }
 
-    static void Init(AFortPlayerControllerAthena* PlayerController)
+    static void Init(SDK::AFortPlayerControllerAthena* PlayerController)
     {
-        PlayerController->QuickBars = Spawners::SpawnActor<AFortQuickBars>({ -280, 400, 3000 }, PlayerController);
+        PlayerController->QuickBars = Spawners::SpawnActor<SDK::AFortQuickBars>({ -280, 400, 3000 }, PlayerController);
         PlayerController->OnRep_QuickBar();
 
         // Fixes "Backpack is full" when holding pickaxe
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 0);
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 1);
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 2);
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 3);
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 4);
-        PlayerController->QuickBars->ServerEnableSlot(EFortQuickBars::Primary, 5);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 0);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 1);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 2);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 3);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 4);
+        PlayerController->QuickBars->ServerEnableSlot(SDK::EFortQuickBars::Primary, 5);
         
-        static std::vector<UFortWorldItemDefinition*> Items = {
-            UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Wall.BuildingItemData_Wall"),
-            UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Floor.BuildingItemData_Floor"),
-            UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Stair_W.BuildingItemData_Stair_W"),
-            UObject::FindObject<UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_RoofS.BuildingItemData_RoofS"),
+        static std::vector<SDK::UFortWorldItemDefinition*> Items = {
+            SDK::UObject::FindObject<SDK::UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Wall.BuildingItemData_Wall"),
+            SDK::UObject::FindObject<SDK::UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Floor.BuildingItemData_Floor"),
+            SDK::UObject::FindObject<SDK::UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_Stair_W.BuildingItemData_Stair_W"),
+            SDK::UObject::FindObject<SDK::UFortBuildingItemDefinition>("FortBuildingItemDefinition BuildingItemData_RoofS.BuildingItemData_RoofS"),
             //UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool"),
 
-            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Launch_Pad_Athena.TID_Floor_Player_Launch_Pad_Athena"),
-            UObject::FindObject<UFortContextTrapItemDefinition>("FortContextTrapItemDefinition TID_ContextTrap_Athena.TID_ContextTrap_Athena"),
-            UObject::FindObject<UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Campfire_Athena.TID_Floor_Player_Campfire_Athena"),
+            SDK::UObject::FindObject<SDK::UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Launch_Pad_Athena.TID_Floor_Player_Launch_Pad_Athena"),
+            SDK::UObject::FindObject<SDK::UFortContextTrapItemDefinition>("FortContextTrapItemDefinition TID_ContextTrap_Athena.TID_ContextTrap_Athena"),
+            SDK::UObject::FindObject<SDK::UFortTrapItemDefinition>("FortTrapItemDefinition TID_Floor_Player_Campfire_Athena.TID_Floor_Player_Campfire_Athena"),
 
-            UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData"),
-            UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition StoneItemData.StoneItemData"),
-            UObject::FindObject<UFortResourceItemDefinition>("FortResourceItemDefinition MetalItemData.MetalItemData"),
+            SDK::UObject::FindObject<SDK::UFortResourceItemDefinition>("FortResourceItemDefinition WoodItemData.WoodItemData"),
+            SDK::UObject::FindObject<SDK::UFortResourceItemDefinition>("FortResourceItemDefinition StoneItemData.StoneItemData"),
+            SDK::UObject::FindObject<SDK::UFortResourceItemDefinition>("FortResourceItemDefinition MetalItemData.MetalItemData"),
 
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataShells.AthenaAmmoDataShells"),
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataEnergyCell.AthenaAmmoDataEnergyCell"),
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsMedium.AthenaAmmoDataBulletsMedium"),
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsLight.AthenaAmmoDataBulletsLight"),
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsHeavy.AthenaAmmoDataBulletsHeavy"),
-            UObject::FindObject<UFortAmmoItemDefinition>("FortAmmoItemDefinition AmmoDataRockets.AmmoDataRockets"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataShells.AthenaAmmoDataShells"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataEnergyCell.AthenaAmmoDataEnergyCell"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsMedium.AthenaAmmoDataBulletsMedium"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsLight.AthenaAmmoDataBulletsLight"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AthenaAmmoDataBulletsHeavy.AthenaAmmoDataBulletsHeavy"),
+            SDK::UObject::FindObject<SDK::UFortAmmoItemDefinition>("FortAmmoItemDefinition AmmoDataRockets.AmmoDataRockets"),
         };
 
         int Slot = 0;
         for (auto& Item : Items)
         {
-            if (Item->IsA(UFortAmmoItemDefinition::StaticClass()))
+            if (Item->IsA(SDK::UFortAmmoItemDefinition::StaticClass()))
             {
-                AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 100);
+                AddItemToSlot(PlayerController, Item, 0, SDK::EFortQuickBars::Secondary, 100);
                 continue;
             }
-            else if (Item->IsA(UFortResourceItemDefinition::StaticClass()))
+            else if (Item->IsA(SDK::UFortResourceItemDefinition::StaticClass()))
             {
-                AddItemToSlot(PlayerController, Item, 0, EFortQuickBars::Secondary, 500);
+                AddItemToSlot(PlayerController, Item, 0, SDK::EFortQuickBars::Secondary, 500);
                 continue;
             }
             else
             {
-                AddItemToSlot(PlayerController, Item, Slot, EFortQuickBars::Secondary, 1);
+                AddItemToSlot(PlayerController, Item, Slot, SDK::EFortQuickBars::Secondary, 1);
             }
 
             Slot++;
@@ -865,10 +865,10 @@ namespace Inventory
 
         auto pick = AddItemToSlot(PlayerController, FindWID("WID_Harvest_Pickaxe_Athena_C_T01"), 0);
 
-        static UFortEditToolItemDefinition* EditTool = UObject::FindObject<UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
-        AddItemToSlot(PlayerController, EditTool, 0, EFortQuickBars::Primary, 1);
+        static SDK::UFortEditToolItemDefinition* EditTool = SDK::UObject::FindObject<SDK::UFortEditToolItemDefinition>("FortEditToolItemDefinition EditTool.EditTool");
+        AddItemToSlot(PlayerController, EditTool, 0, SDK::EFortQuickBars::Primary, 1);
         EquipInventoryItem(PlayerController, pick.ItemGuid);
-        PlayerController->SwapQuickBarFocus(EFortQuickBars::Primary);
-        PlayerController->QuickBars->ServerActivateSlotInternal(EFortQuickBars::Primary, 0, 0, false);
+        PlayerController->SwapQuickBarFocus(SDK::EFortQuickBars::Primary);
+        PlayerController->QuickBars->ServerActivateSlotInternal(SDK::EFortQuickBars::Primary, 0, 0, false);
     }
 }

@@ -9,13 +9,13 @@
 class IGameModeBase
 {
 public:
-    virtual void OnPlayerJoined(AFortPlayerControllerAthena* Controller) = 0;
-    virtual void OnPlayerKilled(AFortPlayerControllerAthena* Controller) = 0;
+    virtual void OnPlayerJoined(SDK::AFortPlayerControllerAthena* Controller) = 0;
+    virtual void OnPlayerKilled(SDK::AFortPlayerControllerAthena* Controller) = 0;
 };
 
 struct LootData
 {
-    UFortItemDefinition* ItemDef;
+    SDK::UFortItemDefinition* ItemDef;
     int Count;
 };
 
@@ -39,7 +39,7 @@ public:
 
     void BaseInitialize()
     {
-        this->BasePlaylist = UObject::FindObject<UFortPlaylistAthena>(BasePlaylistName);
+        this->BasePlaylist = SDK::UObject::FindObject<SDK::UFortPlaylistAthena>(BasePlaylistName);
 
         this->BasePlaylist->bNoDBNO = this->maxTeamSize > 1;
         /* Rejoin can be disabled for certain gamemodes only. To do this, leave the rejoin bool as false, go to the file of the gamemode you want to play (e.g. Playground), and find the line that says "AbstractGameModeBase(PlaylistName, true, 1)"
@@ -47,12 +47,12 @@ public:
 
         if (bRespawnEnabled)
         {
-            this->BasePlaylist->FriendlyFireType = EFriendlyFireType::On;
-            this->BasePlaylist->RespawnLocation = EAthenaRespawnLocation::Air;
-            this->BasePlaylist->RespawnType = EAthenaRespawnType::InfiniteRespawn;
+            this->BasePlaylist->FriendlyFireType = SDK::EFriendlyFireType::On;
+            this->BasePlaylist->RespawnLocation = SDK::EAthenaRespawnLocation::Air;
+            this->BasePlaylist->RespawnType = SDK::EAthenaRespawnType::InfiniteRespawn;
         }
 
-        auto GameState = static_cast<AAthena_GameState_C*>(GetWorld()->GameState);
+        auto GameState = static_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState);
 
         GameState->CurrentPlaylistId = this->BasePlaylist->PlaylistId;
         GameState->CurrentPlaylistData = this->BasePlaylist;
@@ -86,7 +86,7 @@ public:
             if (ok.LootPackageCategoryMinArray[j] > 0)
             {
                 //drops += ((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]);
-                drops.push_back(((UKismetMathLibrary*)UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]));
+                drops.push_back(((SDK::UKismetMathLibrary*)SDK::UKismetMathLibrary::StaticClass())->STATIC_RandomIntegerInRange(ok.LootPackageCategoryWeightArray[j], ok.LootPackageCategoryMinArray[j]));
             }
         }
 
@@ -98,16 +98,16 @@ public:
             
             for (int k = 0; k < drops[j]; k++)
             {
-                FFortLootPackageData ok3;
+                SDK::FFortLootPackageData ok3;
                 if (!ok2[j].LootPackageCall.IsValid() || ok2[j].LootPackageCall.Count <= 0)
                     ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageID.ToString()]);
                 else
                     ok3 = Utils::WeightedRand(lpd[ok2[j].LootPackageCall.ToString()]);
 
-                auto unk = *(TSoftObjectPtr<UObject*>*)&ok3.UnknownData01;
+                auto unk = *(SDK::TSoftObjectPtr<SDK::UObject*>*)&ok3.UnknownData01;
 
                 bool addedit = false;
-                auto obj = (UFortItemDefinition*)UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
+                auto obj = (SDK::UFortItemDefinition*)SDK::UObject::GObjects->GetByIndex(unk.WeakPtr.ObjectIndex);
                 if (obj)
                 {
                     for (int l = 0; l < ret.size(); l++)
@@ -134,16 +134,16 @@ public:
 
     void InitLoot()
     {
-        UDataTable* loottierdata = nullptr;
-        UDataTable* lootpackage = nullptr;
+        SDK::UDataTable* loottierdata = nullptr;
+        SDK::UDataTable* lootpackage = nullptr;
         // TODO: Get datatables from playlist?
         bool gotdata = false;
         bool gotpack = false;
         if (this->BasePlaylist) // Idk if this works
         {
 
-            auto PlaylistLtd = Spawners::LoadObject<UDataTable>(UDataTable::StaticClass(), this->BasePlaylist->LootTierData.ObjectID.AssetPathName.ToWString(true).c_str());
-            auto PlaylistLpd = Spawners::LoadObject<UDataTable>(UDataTable::StaticClass(), this->BasePlaylist->LootPackages.ObjectID.AssetPathName.ToWString(true).c_str());
+            auto PlaylistLtd = Spawners::LoadObject<SDK::UDataTable>(SDK::UDataTable::StaticClass(), this->BasePlaylist->LootTierData.ObjectID.AssetPathName.ToWString(true).c_str());
+            auto PlaylistLpd = Spawners::LoadObject<SDK::UDataTable>(SDK::UDataTable::StaticClass(), this->BasePlaylist->LootPackages.ObjectID.AssetPathName.ToWString(true).c_str());
 
             if (PlaylistLtd)
             {
@@ -159,8 +159,8 @@ public:
         if (!gotdata || !gotpack)
         {
             LOG_WARN("Failed to get LootTierData and LootPackages from playlist\ngotdata: {}\ngotpack: {}", gotdata, gotpack);
-            loottierdata = UObject::FindObject<UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
-            lootpackage = UObject::FindObject<UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
+            loottierdata = SDK::UObject::FindObject<SDK::UDataTable>("DataTable AthenaLootTierData_Client.AthenaLootTierData_Client");
+            lootpackage = SDK::UObject::FindObject<SDK::UDataTable>("DataTable AthenaLootPackages_Client.AthenaLootPackages_Client");
         }
         
         if (loottierdata)
@@ -168,7 +168,7 @@ public:
             for (auto Pair : loottierdata->RowMap)
             {
                 auto rowptr = Pair.Value();
-                auto row = *(FFortLootTierData*)rowptr;
+                auto row = *(SDK::FFortLootTierData*)rowptr;
                 this->ltd[row.TierGroup.ToString()].push_back(row);
             }
         }
@@ -179,7 +179,7 @@ public:
             for (auto Pair : lootpackage->RowMap)
             {
                 auto rowptr = Pair.Value();
-                auto row = *(FFortLootPackageData*)rowptr;
+                auto row = *(SDK::FFortLootPackageData*)rowptr;
                 this->lpd[row.LootPackageID.ToString()].push_back(row);
             }
         }
@@ -190,7 +190,7 @@ public:
         return this->bRespawnEnabled;
     }
 
-    void LoadKilledPlayer(AFortPlayerControllerAthena* Controller, FVector Spawn = { 500, 500, 500 })
+    void LoadKilledPlayer(SDK::AFortPlayerControllerAthena* Controller, SDK::FVector Spawn = { 500, 500, 500 })
     {
         if (this->bRespawnEnabled)
         {
@@ -200,10 +200,10 @@ public:
             }
 
             InitPawn(Controller, Spawn);
-            Controller->ActivateSlot(EFortQuickBars::Primary, 0, 0, true);
+            Controller->ActivateSlot(SDK::EFortQuickBars::Primary, 0, 0, true);
 
             bool bFound = false;
-            auto PickaxeEntry = Inventory::FindItemInInventory<UFortWeaponMeleeItemDefinition>(Controller, bFound);
+            auto PickaxeEntry = Inventory::FindItemInInventory<SDK::UFortWeaponMeleeItemDefinition>(Controller, bFound);
             if (bFound)
             {
                 Inventory::EquipInventoryItem(Controller, PickaxeEntry.ItemGuid);
@@ -213,14 +213,14 @@ public:
         }
     }
     
-    inline void InitCharParts(AFortPlayerControllerAthena* Controller)
+    inline void InitCharParts(SDK::AFortPlayerControllerAthena* Controller)
     {
-        auto PlayerState = (AFortPlayerState*)Controller->PlayerState;
+        auto PlayerState = (SDK::AFortPlayerState*)Controller->PlayerState;
         auto CharDef = Controller->CustomizationLoadout.Character;
         // This is actually unreadable lol
-        auto HeroType = *(UFortHeroType**)((uintptr_t)CharDef + 0x0358);
-        auto Specialization = (UFortHeroSpecialization*)(*(TArray<TSoftObjectPtr<UFortHeroSpecialization*>>*)(&HeroType->UnknownData01))[0].WeakPtr.Get();
-        auto CharacterParts = *(TArray<TSoftObjectPtr<UObject*>>*)(&Specialization->UnknownData01);
+        auto HeroType = *(SDK::UFortHeroType**)((uintptr_t)CharDef + 0x0358);
+        auto Specialization = (SDK::UFortHeroSpecialization*)(*(SDK::TArray<SDK::TSoftObjectPtr<SDK::UFortHeroSpecialization*>>*)(&HeroType->UnknownData01))[0].WeakPtr.Get();
+        auto CharacterParts = *(SDK::TArray<SDK::TSoftObjectPtr<SDK::UObject*>>*)(&Specialization->UnknownData01);
 
         if (HeroType)
         {
@@ -229,7 +229,7 @@ public:
 
             for (int i = 0; i < CharacterParts.Count; i++)
             {
-                auto part = Spawners::LoadObject<UCustomCharacterPart>(UCustomCharacterPart::StaticClass(), CharacterParts[i].ObjectID.AssetPathName.ToWString(true).c_str());
+                auto part = Spawners::LoadObject<SDK::UCustomCharacterPart>(SDK::UCustomCharacterPart::StaticClass(), CharacterParts[i].ObjectID.AssetPathName.ToWString(true).c_str());
                 PlayerState->CharacterParts[(uint8_t)part->CharacterPartType.GetValue()] = part;
             }
 
@@ -237,11 +237,11 @@ public:
         }
     }
 
-    void LoadJoiningPlayer(AFortPlayerControllerAthena* Controller)
+    void LoadJoiningPlayer(SDK::AFortPlayerControllerAthena* Controller)
     {
         LOG_INFO("({}) Initializing {} that has just joined!", "GameModeBase", Controller->PlayerState->GetPlayerName().ToString());
 
-        auto Pawn = Spawners::SpawnActor<APlayerPawn_Athena_C>(GetPlayerStart(Controller).Translation, Controller, {});
+        auto Pawn = Spawners::SpawnActor<SDK::APlayerPawn_Athena_C>(GetPlayerStart(Controller).Translation, Controller, {});
         Pawn->Owner = Controller;
         Pawn->OnRep_Owner();
 
@@ -266,13 +266,13 @@ public:
         Controller->bHasInitiallySpawned = true;
         Controller->OnRep_bHasServerFinishedLoading();
 
-        auto PlayerState = (AFortPlayerStateAthena*)Controller->PlayerState;
+        auto PlayerState = (SDK::AFortPlayerStateAthena*)Controller->PlayerState;
         PlayerState->bHasFinishedLoading = true;
         PlayerState->bHasStartedPlaying = true;
         PlayerState->OnRep_bHasStartedPlaying();
 
-        static auto FortRegisteredPlayerInfo = ((UFortGameInstance*)GetWorld()->OwningGameInstance)->RegisteredPlayers[0]; // UObject::FindObject<UFortRegisteredPlayerInfo>("FortRegisteredPlayerInfo Transient.FortEngine_0_1.FortGameInstance_0_1.FortRegisteredPlayerInfo_0_1");
-        static auto RandomCharacters = static_cast<UFortAssetManager*>(GetEngine()->AssetManager)->AthenaGameData->RandomCharacters;
+        static auto FortRegisteredPlayerInfo = ((SDK::UFortGameInstance*)GetWorld()->OwningGameInstance)->RegisteredPlayers[0]; // UObject::FindObject<UFortRegisteredPlayerInfo>("FortRegisteredPlayerInfo Transient.FortEngine_0_1.FortGameInstance_0_1.FortRegisteredPlayerInfo_0_1");
+        static auto RandomCharacters = static_cast<SDK::UFortAssetManager*>(GetEngine()->AssetManager)->AthenaGameData->RandomCharacters;
 
         Controller->CustomizationLoadout.Character = RandomCharacters[GetKismetMath()->STATIC_RandomIntegerInRange(0, RandomCharacters.Count - 1)];
         
@@ -283,7 +283,7 @@ public:
         //Inventory::EquipLoadout(Controller, this->GetPlaylistLoadout()); // TODO: Make this better
         Abilities::ApplyAbilities(Pawn);
 
-        auto Drone = Spawners::SpawnActor<ABP_VictoryDrone_C>(Controller->K2_GetActorLocation());
+        auto Drone = Spawners::SpawnActor<SDK::ABP_VictoryDrone_C>(Controller->K2_GetActorLocation());
         Drone->InitDrone();
         Drone->TriggerPlayerSpawnEffects();
 
@@ -291,12 +291,12 @@ public:
         {
             InitLoot();
 
-            TArray<AActor*> floots;
-            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_01.Tiered_Athena_FloorLoot_01_C"), &floots);
+            SDK::TArray<SDK::AActor*> floots;
+            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), SDK::UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_01.Tiered_Athena_FloorLoot_01_C"), &floots);
             LOG_INFO("Found {} floor loot spots", floots.Count);
             for (int i = 0; i < floots.Count; i++)
             {
-                auto floot = (ABuildingContainer*)floots[i];
+                auto floot = (SDK::ABuildingContainer*)floots[i];
 
                 auto loot = GetLoot("Loot_AthenaFloorLoot");
                 for (int j = 0; j < loot.size(); j++)
@@ -305,11 +305,11 @@ public:
                 }
             }
             floots.FreeArray();
-            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_Warmup.Tiered_Athena_FloorLoot_Warmup_C"), &floots);
+            GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), SDK::UObject::FindClass("BlueprintGeneratedClass Tiered_Athena_FloorLoot_Warmup.Tiered_Athena_FloorLoot_Warmup_C"), &floots);
             LOG_INFO("Found {} warmup floor loot spots", floots.Count);
             for (int i = 0; i < floots.Count; i++)
             {
-                auto floot = (ABuildingContainer*)floots[i];
+                auto floot = (SDK::ABuildingContainer*)floots[i];
 
                 auto loot = GetLoot("Loot_AthenaFloorLoot_Warmup");
                 for (int j = 0; j < loot.size(); j++)
@@ -346,25 +346,25 @@ public:
         OnPlayerJoined(Controller);
     }
 
-    void OnPlayerJoined(AFortPlayerControllerAthena* Controller) override // derived classes should implement these
+    void OnPlayerJoined(SDK::AFortPlayerControllerAthena* Controller) override // derived classes should implement these
     {
     }
 
-    virtual void OnPlayerKilled(AFortPlayerControllerAthena* Controller) override
+    virtual void OnPlayerKilled(SDK::AFortPlayerControllerAthena* Controller) override
     {
         if (Controller && !IsCurrentlyDisconnecting(Controller->NetConnection) && this->bRespawnEnabled)
         {
             LOG_INFO("Trying to respawn {}", Controller->PlayerState->GetPlayerName().ToString());
             // -Kyiro TO-DO: See if most of this code is even needed but it does work
-            FVector RespawnPos = Controller->Pawn ? Controller->Pawn->K2_GetActorLocation() : FVector(10000, 10000, 10000);
+            SDK::FVector RespawnPos = Controller->Pawn ? Controller->Pawn->K2_GetActorLocation() : SDK::FVector(10000, 10000, 10000);
             RespawnPos.Z += 3000;
 
             this->LoadKilledPlayer(Controller, RespawnPos);
             Controller->RespawnPlayerAfterDeath();
 
-            if (Controller->Pawn->K2_TeleportTo(RespawnPos, FRotator { 0, 0, 0 }))
+            if (Controller->Pawn->K2_TeleportTo(RespawnPos, SDK::FRotator { 0, 0, 0 }))
             {
-                Controller->Character->CharacterMovement->SetMovementMode(EMovementMode::MOVE_Custom, 4);
+                Controller->Character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Custom, 4);
             }
             else
             {
@@ -397,19 +397,19 @@ public:
         return Ret;
     }
 
-    void InitPawn(AFortPlayerControllerAthena* PlayerController, FVector Loc = FVector { 1250, 1818, 3284 }, FQuat Rotation = FQuat(), bool bResetCharacterParts = false)
+    void InitPawn(SDK::AFortPlayerControllerAthena* PlayerController, SDK::FVector Loc = SDK::FVector { 1250, 1818, 3284 }, SDK::FQuat Rotation = SDK::FQuat(), bool bResetCharacterParts = false)
     {
         if (PlayerController->Pawn)
             PlayerController->Pawn->K2_DestroyActor();
 
-        auto SpawnTransform = FTransform();
-        SpawnTransform.Scale3D = FVector(1, 1, 1);
+        auto SpawnTransform = SDK::FTransform();
+        SpawnTransform.Scale3D = SDK::FVector(1, 1, 1);
         SpawnTransform.Rotation = Rotation;
         SpawnTransform.Translation = Loc;
 
         // SpawnTransform = GetPlayerStart(PlayerController);
 
-        auto Pawn = static_cast<APlayerPawn_Athena_C*>(Spawners::SpawnActor(APlayerPawn_Athena_C::StaticClass(), SpawnTransform, PlayerController));
+        auto Pawn = static_cast<SDK::APlayerPawn_Athena_C*>(Spawners::SpawnActor(SDK::APlayerPawn_Athena_C::StaticClass(), SpawnTransform, PlayerController));
 
         PlayerController->Pawn = Pawn;
         PlayerController->AcknowledgedPawn = Pawn;
@@ -461,9 +461,9 @@ private:
     bool bFloortLootSpawned = false;
     std::string BasePlaylistName = "";
     // Looting stuff
-    std::map<std::string, std::vector<FFortLootTierData>> ltd;
-    std::map<std::string, std::vector<FFortLootPackageData>> lpd;
+    std::map<std::string, std::vector<SDK::FFortLootTierData>> ltd;
+    std::map<std::string, std::vector<SDK::FFortLootPackageData>> lpd;
 
 public:
-    UFortPlaylistAthena* BasePlaylist;
+    SDK::UFortPlaylistAthena* BasePlaylist;
 };

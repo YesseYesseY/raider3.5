@@ -7,36 +7,36 @@
 #include "json.hpp"
 #include "Native.h"
 
-typedef std::array<UFortWeaponRangedItemDefinition*, 6> PlayerLoadout;
+typedef std::array<SDK::UFortWeaponRangedItemDefinition*, 6> PlayerLoadout;
 
 inline bool bTraveled = false;
 inline bool bListening = false;
 static bool bSpawnedFloorLoot = false;
 
-static std::vector<ABuildingActor*> ExistingBuildings;
-static AFortOnlineBeaconHost* HostBeacon = nullptr;
+static std::vector<SDK::ABuildingActor*> ExistingBuildings;
+static SDK::AFortOnlineBeaconHost* HostBeacon = nullptr;
 
-inline UWorld* GetWorld()
+inline SDK::UWorld* GetWorld()
 {
     return GetEngine()->GameViewport->World;
 }
 
-inline AAthena_PlayerController_C* GetPlayerController(int32 Index = 0)
+inline SDK::AAthena_PlayerController_C* GetPlayerController(int32 Index = 0)
 {
     if (Index > GetWorld()->OwningGameInstance->LocalPlayers.Num())
     {
-        return static_cast<AAthena_PlayerController_C*>(GetWorld()->OwningGameInstance->LocalPlayers[0]->PlayerController);
+        return static_cast<SDK::AAthena_PlayerController_C*>(GetWorld()->OwningGameInstance->LocalPlayers[0]->PlayerController);
     }
 
-    return static_cast<AAthena_PlayerController_C*>(GetWorld()->OwningGameInstance->LocalPlayers[Index]->PlayerController);
+    return static_cast<SDK::AAthena_PlayerController_C*>(GetWorld()->OwningGameInstance->LocalPlayers[Index]->PlayerController);
 }
 
 struct FObjectKey
 {
 public:
-    UObject* ResolveObjectPtr() const
+    SDK::UObject* ResolveObjectPtr() const
     {
-        FWeakObjectPtr WeakPtr;
+        SDK::FWeakObjectPtr WeakPtr;
         WeakPtr.ObjectIndex = ObjectIndex;
         WeakPtr.ObjectSerialNumber = ObjectSerialNumber;
 
@@ -47,64 +47,64 @@ public:
     int32 ObjectSerialNumber;
 };
 
-FORCEINLINE auto& GetClassRepNodePolicies(UObject* ReplicationDriver)
+FORCEINLINE auto& GetClassRepNodePolicies(SDK::UObject* ReplicationDriver)
 {
-    return *reinterpret_cast<TMap<FObjectKey, EClassRepNodeMapping>*>(__int64(ReplicationDriver) + 0x3B8);
+    return *reinterpret_cast<SDK::TMap<FObjectKey, SDK::EClassRepNodeMapping>*>(__int64(ReplicationDriver) + 0x3B8);
 }
 
-FORCEINLINE UGameplayStatics* GetGameplayStatics()
+FORCEINLINE SDK::UGameplayStatics* GetGameplayStatics()
 {
-    return reinterpret_cast<UGameplayStatics*>(UGameplayStatics::StaticClass());
+    return reinterpret_cast<SDK::UGameplayStatics*>(SDK::UGameplayStatics::StaticClass());
 }
 
-FORCEINLINE UKismetSystemLibrary* GetKismetSystem()
+FORCEINLINE SDK::UKismetSystemLibrary* GetKismetSystem()
 {
-    return reinterpret_cast<UKismetSystemLibrary*>(UKismetSystemLibrary::StaticClass());
+    return reinterpret_cast<SDK::UKismetSystemLibrary*>(SDK::UKismetSystemLibrary::StaticClass());
 }
 
-FORCEINLINE UDataTableFunctionLibrary* GetDataTableFunctionLibrary()
+FORCEINLINE SDK::UDataTableFunctionLibrary* GetDataTableFunctionLibrary()
 {
-    return reinterpret_cast<UDataTableFunctionLibrary*>(UDataTableFunctionLibrary::StaticClass());
+    return reinterpret_cast<SDK::UDataTableFunctionLibrary*>(SDK::UDataTableFunctionLibrary::StaticClass());
 }
 
-FORCEINLINE UFortKismetLibrary* GetFortKismet()
+FORCEINLINE SDK::UFortKismetLibrary* GetFortKismet()
 {
-    return ((UFortKismetLibrary*)UFortKismetLibrary::StaticClass());
+    return ((SDK::UFortKismetLibrary*)SDK::UFortKismetLibrary::StaticClass());
 }
 
-FORCEINLINE UKismetStringLibrary* GetKismetString()
+FORCEINLINE SDK::UKismetStringLibrary* GetKismetString()
 {
-    return (UKismetStringLibrary*)UKismetStringLibrary::StaticClass();
+    return (SDK::UKismetStringLibrary*)SDK::UKismetStringLibrary::StaticClass();
 }
-FORCEINLINE UKismetTextLibrary* GetKismetText()
+FORCEINLINE SDK::UKismetTextLibrary* GetKismetText()
 {
-    return (UKismetTextLibrary*)UKismetTextLibrary::StaticClass();
+    return (SDK::UKismetTextLibrary*)SDK::UKismetTextLibrary::StaticClass();
 }
-FORCEINLINE UKismetMathLibrary* GetKismetMath()
+FORCEINLINE SDK::UKismetMathLibrary* GetKismetMath()
 {
-    return (UKismetMathLibrary*)UKismetMathLibrary::StaticClass();
+    return (SDK::UKismetMathLibrary*)SDK::UKismetMathLibrary::StaticClass();
 }
-FORCEINLINE UKismetGuidLibrary* GetKismetGuid()
+FORCEINLINE SDK::UKismetGuidLibrary* GetKismetGuid()
 {
-    return (UKismetGuidLibrary*)UKismetGuidLibrary::StaticClass();
+    return (SDK::UKismetGuidLibrary*)SDK::UKismetGuidLibrary::StaticClass();
 }
 
 inline void CreateConsole()
 {
-    GetEngine()->GameViewport->ViewportConsole = static_cast<UConsole*>(GetGameplayStatics()->STATIC_SpawnObject(UConsole::StaticClass(), GetEngine()->GameViewport));
+    GetEngine()->GameViewport->ViewportConsole = static_cast<SDK::UConsole*>(GetGameplayStatics()->STATIC_SpawnObject(SDK::UConsole::StaticClass(), GetEngine()->GameViewport));
 }
 
-inline auto CreateCheatManager(APlayerController* Controller)
+inline auto CreateCheatManager(SDK::APlayerController* Controller)
 {
     if (!Controller->CheatManager)
     {
-        Controller->CheatManager = static_cast<UCheatManager*>(GetGameplayStatics()->STATIC_SpawnObject(UFortCheatManager::StaticClass(), Controller)); // lets just assume its gamemode athena
+        Controller->CheatManager = static_cast<SDK::UCheatManager*>(GetGameplayStatics()->STATIC_SpawnObject(SDK::UFortCheatManager::StaticClass(), Controller)); // lets just assume its gamemode athena
     }
 
-    return static_cast<UFortCheatManager*>(Controller->CheatManager);
+    return static_cast<SDK::UFortCheatManager*>(Controller->CheatManager);
 }
 
-bool CanBuild(ABuildingSMActor* BuildingActor)
+bool CanBuild(SDK::ABuildingSMActor* BuildingActor)
 {
     bool bCanBuild = true;
 
@@ -129,17 +129,17 @@ bool CanBuild(ABuildingSMActor* BuildingActor)
     return false;
 }
 
-bool IsCurrentlyDisconnecting(UNetConnection* Connection)
+bool IsCurrentlyDisconnecting(SDK::UNetConnection* Connection)
 {
     if (!Connection || IsBadReadPtr(Connection, sizeof(Connection))) return true;
     
-    auto PC = (AFortPlayerController*)Connection->PlayerController;
+    auto PC = (SDK::AFortPlayerController*)Connection->PlayerController;
     if (!PC || IsBadReadPtr(PC, sizeof(PC))) return true;
     
     return PC->bIsDisconnecting;
 }
 
-void SwapPlayerControllers(APlayerController* OldPC, APlayerController* NewPC)
+void SwapPlayerControllers(SDK::APlayerController* OldPC, SDK::APlayerController* NewPC)
 {
     if (OldPC && NewPC && OldPC->Player)
     {
@@ -148,22 +148,22 @@ void SwapPlayerControllers(APlayerController* OldPC, APlayerController* NewPC)
 
         GetWorld()->AuthorityGameMode->K2_OnSwapPlayerControllers(OldPC, NewPC);
 
-        OldPC->PendingSwapConnection = reinterpret_cast<UNetConnection*>(OldPC->Player);
+        OldPC->PendingSwapConnection = reinterpret_cast<SDK::UNetConnection*>(OldPC->Player);
     }
 }
 
-void Spectate(UNetConnection* SpectatingConnection, AFortPlayerStateAthena* StateToSpectate)
+void Spectate(SDK::UNetConnection* SpectatingConnection, SDK::AFortPlayerStateAthena* StateToSpectate)
 {
     if (!SpectatingConnection || !StateToSpectate)
         return;
 
     auto PawnToSpectate = StateToSpectate->GetCurrentPawn();
-    auto DeadPC = static_cast<AFortPlayerControllerAthena*>(SpectatingConnection->PlayerController);
+    auto DeadPC = static_cast<SDK::AFortPlayerControllerAthena*>(SpectatingConnection->PlayerController);
 
     if (!DeadPC)
         return;
 
-    auto DeadPlayerState = static_cast<AFortPlayerStateAthena*>(DeadPC->PlayerState);
+    auto DeadPlayerState = static_cast<SDK::AFortPlayerStateAthena*>(DeadPC->PlayerState);
 
     if (!IsCurrentlyDisconnecting(SpectatingConnection) && DeadPlayerState && PawnToSpectate)
     {
@@ -177,9 +177,9 @@ inline void DumpObjects()
 
     if (objects)
     {
-        for (int i = 0; i < UObject::GObjects->Num(); i++)
+        for (int i = 0; i < SDK::UObject::GObjects->Num(); i++)
         {
-            auto Object = UObject::GObjects->GetByIndex(i);
+            auto Object = SDK::UObject::GObjects->GetByIndex(i);
 
             if (!Object)
                 continue;
@@ -193,11 +193,11 @@ inline void DumpObjects()
     std::cout << "Finished dumping objects!\n";
 }
 
-static bool KickController(APlayerController* PC, FString Message)
+static bool KickController(SDK::APlayerController* PC, SDK::FString Message)
 {
     if (PC && Message.Data)
     {
-        FText text = reinterpret_cast<UKismetTextLibrary*>(UKismetTextLibrary::StaticClass())->STATIC_Conv_StringToText(Message);
+        SDK::FText text = reinterpret_cast<SDK::UKismetTextLibrary*>(SDK::UKismetTextLibrary::StaticClass())->STATIC_Conv_StringToText(Message);
         return Native::OnlineSession::KickPlayer(GetWorld()->AuthorityGameMode->GameSession, PC, text);
     }
 
@@ -205,15 +205,15 @@ static bool KickController(APlayerController* PC, FString Message)
 }
 
 // template <typename SoftType>
-UObject* SoftObjectToObject(TSoftObjectPtr<UObject*> SoftPtr)
+SDK::UObject* SoftObjectToObject(SDK::TSoftObjectPtr<SDK::UObject*> SoftPtr)
 {
     static auto KismetSystem = GetKismetSystem();
-    static auto fn = UObject::FindObject<UFunction>("Function Engine.KismetSystemLibrary.Conv_SoftClassReferenceToClass");
+    static auto fn = SDK::UObject::FindObject<SDK::UFunction>("Function Engine.KismetSystemLibrary.Conv_SoftClassReferenceToClass");
 
     struct
     {
-        TSoftObjectPtr<UObject*> SoftClassReference;
-        UObject* Class;
+        SDK::TSoftObjectPtr<SDK::UObject*> SoftClassReference;
+        SDK::UObject* Class;
     } params;
 
     params.SoftClassReference = SoftPtr;
@@ -228,31 +228,31 @@ UObject* SoftObjectToObject(TSoftObjectPtr<UObject*> SoftPtr)
     return params.Class;
 }
 
-auto GetAllActorsOfClass(UClass* Class)
+auto GetAllActorsOfClass(SDK::UClass* Class)
 {
     // You have to free this!!!
-    TArray<AActor*> OutActors;
+    SDK::TArray<SDK::AActor*> OutActors;
 
-    static auto GameplayStatics = static_cast<UGameplayStatics*>(UGameplayStatics::StaticClass()->CreateDefaultObject());
+    static auto GameplayStatics = static_cast<SDK::UGameplayStatics*>(SDK::UGameplayStatics::StaticClass()->CreateDefaultObject());
     GameplayStatics->STATIC_GetAllActorsOfClass(GetWorld(), Class, &OutActors);
 
     return OutActors;
 }
 
-FTransform GetPlayerStart(AFortPlayerControllerAthena* PC)
+SDK::FTransform GetPlayerStart(SDK::AFortPlayerControllerAthena* PC)
 {
-    TArray<AActor*> OutActors = GetAllActorsOfClass(AFortPlayerStartWarmup::StaticClass());
+    SDK::TArray<SDK::AActor*> OutActors = GetAllActorsOfClass(SDK::AFortPlayerStartWarmup::StaticClass());
 
     auto ActorsNum = OutActors.Num();
 
-    auto SpawnTransform = FTransform();
-    SpawnTransform.Scale3D = FVector(1, 1, 1);
-    SpawnTransform.Rotation = FQuat();
-    SpawnTransform.Translation = FVector { 1250, 1818, 3284 }; // Next to salty
+    auto SpawnTransform = SDK::FTransform();
+    SpawnTransform.Scale3D = SDK::FVector(1, 1, 1);
+    SpawnTransform.Rotation = SDK::FQuat();
+    SpawnTransform.Translation = SDK::FVector { 1250, 1818, 3284 }; // Next to salty
 
-    auto GamePhase = static_cast<AAthena_GameState_C*>(GetWorld()->GameState)->GamePhase;
+    auto GamePhase = static_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState)->GamePhase;
 
-    if (ActorsNum != 0 && (GamePhase == EAthenaGamePhase::Setup || GamePhase == EAthenaGamePhase::Warmup))
+    if (ActorsNum != 0 && (GamePhase == SDK::EAthenaGamePhase::Setup || GamePhase == SDK::EAthenaGamePhase::Warmup))
     {
         auto ActorToUseNum = Utils::RandomIntInRange(0, ActorsNum);
         auto ActorToUse = (OutActors)[ActorToUseNum];
@@ -265,7 +265,7 @@ FTransform GetPlayerStart(AFortPlayerControllerAthena* PC)
 
         SpawnTransform.Translation = ActorToUse->K2_GetActorLocation();
 
-        PC->WarmupPlayerStart = static_cast<AFortPlayerStartWarmup*>(ActorToUse);
+        PC->WarmupPlayerStart = static_cast<SDK::AFortPlayerStartWarmup*>(ActorToUse);
     }
 
     OutActors.FreeArray();
@@ -273,31 +273,31 @@ FTransform GetPlayerStart(AFortPlayerControllerAthena* PC)
     return SpawnTransform;
 }
 
-inline UKismetMathLibrary* GetMath()
+inline SDK::UKismetMathLibrary* GetMath()
 {
-    return (UKismetMathLibrary*)UKismetMathLibrary::StaticClass();
+    return (SDK::UKismetMathLibrary*)SDK::UKismetMathLibrary::StaticClass();
 }
 
-FVector RotToVec(const FRotator& Rotator)
+SDK::FVector RotToVec(const SDK::FRotator& Rotator)
 {
     float CP, SP, CY, SY;
     Utils::sinCos(&SP, &CP, GetMath()->STATIC_DegreesToRadians(Rotator.Pitch));
     Utils::sinCos(&SY, &CY, GetMath()->STATIC_DegreesToRadians(Rotator.Yaw));
-    auto V = FVector(CP * CY, CP * SY, SP);
+    auto V = SDK::FVector(CP * CY, CP * SY, SP);
 
     return V;
 }
 
-UFortWeaponRangedItemDefinition* FindWID(const std::string& WID)
+SDK::UFortWeaponRangedItemDefinition* FindWID(const std::string& WID)
 {
-    auto Def = UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition " + WID + '.' + WID);
+    auto Def = SDK::UObject::FindObject<SDK::UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition " + WID + '.' + WID);
 
     if (!Def)
     {
-        Def = UObject::FindObject<UFortWeaponRangedItemDefinition>("WID_Harvest_" + WID + "_Athena_C_T01" + ".WID_Harvest_" + WID + "_Athena_C_T01");
+        Def = SDK::UObject::FindObject<SDK::UFortWeaponRangedItemDefinition>("WID_Harvest_" + WID + "_Athena_C_T01" + ".WID_Harvest_" + WID + "_Athena_C_T01");
 
         if (!Def)
-            Def = UObject::FindObject<UFortWeaponRangedItemDefinition>(WID + "." + WID);
+            Def = SDK::UObject::FindObject<SDK::UFortWeaponRangedItemDefinition>(WID + "." + WID);
     }
 
     return Def;
@@ -308,5 +308,5 @@ auto GetRandomWID(int skip = 0)
     if (skip == 0)
         skip = Utils::RandomIntInRange(4, 100);
 
-    return UObject::FindObject<UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition WID_", skip);
+    return SDK::UObject::FindObject<SDK::UFortWeaponRangedItemDefinition>("FortWeaponRangedItemDefinition WID_", skip);
 }

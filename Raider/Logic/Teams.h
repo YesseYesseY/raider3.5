@@ -5,13 +5,13 @@
 class Team
 {
 public:
-    Team(EFortTeam TeamPosition, int maxTeamSize)
+    Team(SDK::EFortTeam TeamPosition, int maxTeamSize)
     {
         this->maxTeamSize = maxTeamSize;
         this->TeamPosition = TeamPosition;
     }
 
-    void AddPlayer(AFortPlayerController* Member)
+    void AddPlayer(SDK::AFortPlayerController* Member)
     {
         if (this->Num() == this->maxTeamSize)
             return;
@@ -23,7 +23,7 @@ public:
     {
         for (auto& Member : Members)
         {
-            Member->ServerKickPlayer(Member->GetGameAccountId(), FText());
+            Member->ServerKickPlayer(Member->GetGameAccountId(), SDK::FText());
         }
     }
 
@@ -37,26 +37,26 @@ public:
         Members.clear();
     }
 
-    void InitializePlayer(AFortPlayerController* Member)
+    void InitializePlayer(SDK::AFortPlayerController* Member)
     {
         LOG_INFO("({}) Initializing {} on team {}!", "Teams", Member->PlayerState->GetPlayerName().ToString(), uint32_t(TeamPosition) - 2);
 
-        static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->TeamIndex = this->TeamPosition;
-        static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->PlayerTeam->Team = this->TeamPosition;
-        static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->SquadId = (uint32_t(TeamPosition) - 2) + 1;
+        static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->TeamIndex = this->TeamPosition;
+        static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->PlayerTeam->Team = this->TeamPosition;
+        static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->SquadId = (uint32_t(TeamPosition) - 2) + 1;
         for (auto& _Member : Members)
         {
-            static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->PlayerTeam->TeamMembers.Add(_Member);
+            static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->PlayerTeam->TeamMembers.Add(_Member);
         }
 
-        static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->OnRep_SquadId();
-        static_cast<AFortPlayerStateAthena*>(Member->PlayerState)->OnRep_PlayerTeam();
+        static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->OnRep_SquadId();
+        static_cast<SDK::AFortPlayerStateAthena*>(Member->PlayerState)->OnRep_PlayerTeam();
     }
 
 protected:
     int maxTeamSize;
-    std::vector<AFortPlayerController*> Members;
-    EFortTeam TeamPosition;
+    std::vector<SDK::AFortPlayerController*> Members;
+    SDK::EFortTeam TeamPosition;
 };
 
 class PlayerTeams
@@ -67,10 +67,10 @@ public:
         this->maxTeamSize = maxTeamSize;
     }
 
-    EFortTeam GetNextSlot()
+    SDK::EFortTeam GetNextSlot()
     {
         int availableSlot = this->Teams.size() + 2;
-        return static_cast<EFortTeam>(availableSlot);
+        return static_cast<SDK::EFortTeam>(availableSlot);
     }
 
     std::shared_ptr<Team> FindAvailableSpot()
@@ -101,7 +101,7 @@ public:
         }
     }
 
-    void AddPlayerToRandomTeam(AFortPlayerController* Member)
+    void AddPlayerToRandomTeam(SDK::AFortPlayerController* Member)
     {
         auto AvailableSpot = FindAvailableSpot();
         if (!AvailableSpot) {

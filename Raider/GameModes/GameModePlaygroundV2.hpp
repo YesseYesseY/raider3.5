@@ -18,11 +18,11 @@ public:
     void Initialize()
     {
         LOG_INFO("Initializing GameMode PlaygroundV2!");
-        AAthena_GameState_C* GameState = static_cast<AAthena_GameState_C*>(GetWorld()->GameState);
-        UCurveTable* GameData = (UCurveTable*)GameState->CurrentPlaylistData->GameData.WeakPtr.Get();
+        SDK::AAthena_GameState_C* GameState = static_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState);
+        SDK::UCurveTable* GameData = (SDK::UCurveTable*)GameState->CurrentPlaylistData->GameData.WeakPtr.Get();
         if (!GameData)
         {
-            GameData = Spawners::LoadObject<UCurveTable>(UCurveTable::StaticClass(), GameState->CurrentPlaylistData->GameData.ObjectID.AssetPathName.ToWString(true).c_str());
+            GameData = Spawners::LoadObject<SDK::UCurveTable>(SDK::UCurveTable::StaticClass(), GameState->CurrentPlaylistData->GameData.ObjectID.AssetPathName.ToWString(true).c_str());
         }
 
         if (!GameData)
@@ -54,7 +54,7 @@ public:
         }
     }
 
-    void OnPlayerJoined(AFortPlayerControllerAthena* Controller) override
+    void OnPlayerJoined(SDK::AFortPlayerControllerAthena* Controller) override
     {
         this->Teams->AddPlayerToRandomTeam(Controller);
     }

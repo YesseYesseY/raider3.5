@@ -32,10 +32,10 @@ namespace GUI
         if (GetAsyncKeyState(VK_F2) & 1)
             menu_opened = !menu_opened;
 
-        static auto pos = FVector2D { 200.f, 250.0f };
-        static auto setuppos = FVector2D { 200.f, 250.0f };
+        static auto pos = SDK::FVector2D { 200.f, 250.0f };
+        static auto setuppos = SDK::FVector2D { 200.f, 250.0f };
 
-        if (ZeroGUI::Window(L"Setup", &setuppos, FVector2D{ 500.0f, 700.0f }, menu_opened && !bTraveled))
+        if (ZeroGUI::Window(L"Setup", &setuppos, SDK::FVector2D { 500.0f, 700.0f }, menu_opened && !bTraveled))
         {
             REGISTER_MODE(GameModeSolos)
             REGISTER_MODE(GameModeDuos)
@@ -46,12 +46,12 @@ namespace GUI
             REGISTER_MODE(GameModeSolosNoBuild)
         }
 
-        if (ZeroGUI::Window(L"Raider", &pos, FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
+        if (ZeroGUI::Window(L"Raider", &pos, SDK::FVector2D { 500.0f, 700.0f }, menu_opened && bTraveled))
         {
             if (bListening && HostBeacon)
             {
-                static auto GameState = reinterpret_cast<AAthena_GameState_C*>(GetWorld()->GameState);
-                static APlayerState* currentPlayer = nullptr;
+                static auto GameState = reinterpret_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState);
+                static SDK::APlayerState* currentPlayer = nullptr;
 
                 // This is bad, but works for now.
                 if (currentPlayer)
@@ -70,7 +70,7 @@ namespace GUI
 
                     if (ZeroGUI::Button(L"Kick", { 60.0f, 25.0f }))
                     {
-                        KickController((APlayerController*)currentPlayer->Owner, L"You have been kicked by the server.");
+                        KickController((SDK::APlayerController*)currentPlayer->Owner, L"You have been kicked by the server.");
 
                         mtx.lock();
                         currentPlayer = nullptr;
@@ -79,24 +79,24 @@ namespace GUI
 
                     if (ZeroGUI::Button(L"Dump inv", { 60.0f, 25.0f }))
                     {
-                        Inventory::DumpInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
+                        Inventory::DumpInventory((SDK::AFortPlayerControllerAthena*)currentPlayer->Owner);
                     }
 
                     if (ZeroGUI::Button(L"Empty inv", { 60.0f, 25.0f }))
                     {
-                        Inventory::EmptyInventory((AFortPlayerControllerAthena*)currentPlayer->Owner);
+                        Inventory::EmptyInventory((SDK::AFortPlayerControllerAthena*)currentPlayer->Owner);
                     }
                 }
                 else
                 {
                     static int tab = 0;
-                    if (ZeroGUI::ButtonTab(L"Game", FVector2D { 110, 25 }, tab == 0))
+                    if (ZeroGUI::ButtonTab(L"Game", SDK::FVector2D { 110, 25 }, tab == 0))
                         tab = 0;
-                    if (ZeroGUI::ButtonTab(L"Players", FVector2D { 110, 25 }, tab == 1))
+                    if (ZeroGUI::ButtonTab(L"Players", SDK::FVector2D { 110, 25 }, tab == 1))
                         tab = 1;
-                    if (ZeroGUI::ButtonTab(L"Dev", FVector2D { 110, 25 }, tab == 2))
+                    if (ZeroGUI::ButtonTab(L"Dev", SDK::FVector2D { 110, 25 }, tab == 2))
                         tab = 2;
-                    if (ZeroGUI::ButtonTab(L"Event", FVector2D { 110, 25 }, tab == 3))
+                    if (ZeroGUI::ButtonTab(L"Event", SDK::FVector2D { 110, 25 }, tab == 3))
                         tab = 3;
 
                     ZeroGUI::NextColumn(130.0f);
@@ -107,9 +107,9 @@ namespace GUI
                     {
                         if (!bStartedBus)
                         {
-                            if (ZeroGUI::Button(L"Start Bus", FVector2D { 100, 25 }))
+                            if (ZeroGUI::Button(L"Start Bus", SDK::FVector2D { 100, 25 }))
                             {
-                                if (static_cast<AAthena_GameState_C*>(GetWorld()->GameState)->GamePhase >= EAthenaGamePhase::Aircraft)
+                                if (static_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState)->GamePhase >= SDK::EAthenaGamePhase::Aircraft)
                                 {
                                     LOG_INFO("The bus has already started!")
                                     bStartedBus = true;
@@ -161,11 +161,11 @@ namespace GUI
 
                     case 2:
                     {
-                        if (ZeroGUI::Button(L"Dump Objects", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Dump Objects", SDK::FVector2D { 100, 25 }))
                         {
                             DumpObjects();
                         }
-                        if (ZeroGUI::Button(L"Init loot", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Init loot", SDK::FVector2D { 100, 25 }))
                         {
                             Game::Mode->InitLoot();
                         }
@@ -174,18 +174,18 @@ namespace GUI
                     case 3:
                     {
 
-                        static ABP_Athena_Event_Components_C* EventComponent = nullptr;
+                        static SDK::ABP_Athena_Event_Components_C* EventComponent = nullptr;
 
-                        if (ZeroGUI::Button(L"Spawn Meteor", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Spawn Meteor", SDK::FVector2D { 100, 25 }))
                         {
                             if (EventComponent == nullptr)
                             {
-                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
-                                TArray<AActor*> EventComponents;
-                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                SDK::UObject::FindObject<SDK::ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                SDK::TArray<SDK::AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), SDK::ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
                                 if (EventComponents.Count > 0)
                                 {
-                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                    EventComponent = (SDK::ABP_Athena_Event_Components_C*)EventComponents[0];
                                 }
                             }
 
@@ -193,16 +193,16 @@ namespace GUI
                             EventComponent->SpawnMeteor();
                         }
 
-                        if (ZeroGUI::Button(L"Spawn Shooting Stars", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Spawn Shooting Stars", SDK::FVector2D { 100, 25 }))
                         {
                             if (EventComponent == nullptr)
                             {
-                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
-                                TArray<AActor*> EventComponents;
-                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                SDK::UObject::FindObject<SDK::ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                SDK::TArray<SDK::AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), SDK::ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
                                 if (EventComponents.Count > 0)
                                 {
-                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                    EventComponent = (SDK::ABP_Athena_Event_Components_C*)EventComponents[0];
                                 }
                             }
 
@@ -213,16 +213,16 @@ namespace GUI
                         static float cometpos = 0.0f;
                         ZeroGUI::SliderFloat(L"Comet pos", &cometpos, 0, 1, L"%.02f");
 
-                        if (ZeroGUI::Button(L"Update Comet", FVector2D { 100, 25 }))
+                        if (ZeroGUI::Button(L"Update Comet", SDK::FVector2D { 100, 25 }))
                         {
                             if (EventComponent == nullptr)
                             {
-                                UObject::FindObject<ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
-                                TArray<AActor*> EventComponents;
-                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
+                                SDK::UObject::FindObject<SDK::ABP_Athena_Event_Components_C>("BP_Athena_Event_Components_C Athena_GameplayActors.Athena_GameplayActors.PersistentLevel.BP_Athena_Event_Components_54_55");
+                                SDK::TArray<SDK::AActor*> EventComponents;
+                                GetGameplayStatics()->STATIC_GetAllActorsOfClass(GetWorld(), SDK::ABP_Athena_Event_Components_C::StaticClass(), &EventComponents);
                                 if (EventComponents.Count > 0)
                                 {
-                                    EventComponent = (ABP_Athena_Event_Components_C*)EventComponents[0];
+                                    EventComponent = (SDK::ABP_Athena_Event_Components_C*)EventComponents[0];
                                 }
                             }
 

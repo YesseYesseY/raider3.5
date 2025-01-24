@@ -3,9 +3,9 @@
 #include "Patterns.h"
 #include "Util.h"
 
-inline UFortEngine* GetEngine()
+inline SDK::UFortEngine* GetEngine()
 {
-    static auto engine = UObject::FindObject<UFortEngine>("FortEngine_");
+    static auto engine = SDK::UObject::FindObject<SDK::UFortEngine>("FortEngine_");
     return engine;
 }
 
@@ -13,7 +13,7 @@ namespace Native
 {
     namespace Inventory
     {
-        void(__fastcall* ReloadThing)(AFortWeapon* Weapon, uint32_t AmountToRemove);
+        void(__fastcall* ReloadThing)(SDK::AFortWeapon* Weapon, uint32_t AmountToRemove);
     }
     namespace Actor
     {
@@ -22,12 +22,12 @@ namespace Native
 
     namespace PlayerController
     {
-        void(__fastcall* GetPlayerViewPoint)(APlayerController* pc, FVector* a2, FRotator* a3);
+        void(__fastcall* GetPlayerViewPoint)(SDK::APlayerController* pc, SDK::FVector* a2, SDK::FRotator* a3);
     }
 
     namespace LocalPlayer
     {
-        bool (*SpawnPlayActor)(ULocalPlayer* Player, const FString& URL, FString& OutError, UWorld* World);
+        bool (*SpawnPlayActor)(SDK::ULocalPlayer* Player, const SDK::FString& URL, SDK::FString& OutError, SDK::UWorld* World);
     }
 
     namespace GC
@@ -37,70 +37,70 @@ namespace Native
 
     namespace AbilitySystemComponent
     {
-        inline FGameplayAbilitySpecHandle* (*GiveAbility)(UAbilitySystemComponent* _this, FGameplayAbilitySpecHandle* outHandle, FGameplayAbilitySpec inSpec);
-        inline bool (*InternalTryActivateAbility)(UAbilitySystemComponent* _this, FGameplayAbilitySpecHandle Handle, FPredictionKey InPredictionKey, UGameplayAbility** OutInstancedAbility, void* /* FOnGameplayAbilityEnded::FDelegate* */ OnGameplayAbilityEndedDelegate, FGameplayEventData* TriggerEventData);
-        inline void (*MarkAbilitySpecDirty)(UAbilitySystemComponent* _this, FGameplayAbilitySpec& Spec);
+        inline SDK::FGameplayAbilitySpecHandle* (*GiveAbility)(SDK::UAbilitySystemComponent* _this, SDK::FGameplayAbilitySpecHandle* outHandle, SDK::FGameplayAbilitySpec inSpec);
+        inline bool (*InternalTryActivateAbility)(SDK::UAbilitySystemComponent* _this, SDK::FGameplayAbilitySpecHandle Handle, SDK::FPredictionKey InPredictionKey, SDK::UGameplayAbility** OutInstancedAbility, void* /* FOnGameplayAbilityEnded::FDelegate* */ OnGameplayAbilityEndedDelegate, SDK::FGameplayEventData* TriggerEventData);
+        inline void (*MarkAbilitySpecDirty)(SDK::UAbilitySystemComponent* _this, SDK::FGameplayAbilitySpec& Spec);
     }
 
     namespace NetDriver
     {
-        inline void (*TickFlush)(UNetDriver* NetDriver, float DeltaSeconds);
-        inline bool (*IsLevelInitializedForActor)(UNetDriver* NetDriver, AActor* Actor, UNetConnection* Connection);
+        inline void (*TickFlush)(SDK::UNetDriver* NetDriver, float DeltaSeconds);
+        inline bool (*IsLevelInitializedForActor)(SDK::UNetDriver* NetDriver, SDK::AActor* Actor, SDK::UNetConnection* Connection);
 
-        inline bool (*InitListen)(UObject* Driver, void* InNotify, FURL& LocalURL, bool bReuseAddressAndPort, FString& Error);
+        inline bool (*InitListen)(SDK::UObject* Driver, void* InNotify, SDK::FURL& LocalURL, bool bReuseAddressAndPort, SDK::FString& Error);
     }
 
     namespace ReplicationDriver
     {
-        inline void (*ServerReplicateActors)(UReplicationDriver* ReplicationDriver);
+        inline void (*ServerReplicateActors)(SDK::UReplicationDriver* ReplicationDriver);
     }
 
     namespace NetConnection
     {
-        inline void (*ReceiveFString)(void* Bunch, FString& Str);
-        inline void (*ReceiveUniqueIdRepl)(void* Bunch, FUniqueNetIdRepl& Str);
-        inline FString (*LowLevelGetRemoteAddress)(UNetConnection* Connection, bool bAppendPort);
+        inline void (*ReceiveFString)(void* Bunch, SDK::FString& Str);
+        inline void (*ReceiveUniqueIdRepl)(void* Bunch, SDK::FUniqueNetIdRepl& Str);
+        inline SDK::FString (*LowLevelGetRemoteAddress)(SDK::UNetConnection* Connection, bool bAppendPort);
     }
 
     namespace OnlineSession
     {
-        inline char (*KickPlayer)(AGameSession* a1, APlayerController*, FText a3);
+        inline char (*KickPlayer)(SDK::AGameSession* a1, SDK::APlayerController*, SDK::FText a3);
     }
 
     namespace OnlineBeacon
     {
-        inline void (*PauseBeaconRequests)(AOnlineBeacon* Beacon, bool bPause);
-        inline uint8 (*NotifyAcceptingConnection)(AOnlineBeacon* Beacon);
+        inline void (*PauseBeaconRequests)(SDK::AOnlineBeacon* Beacon, bool bPause);
+        inline uint8 (*NotifyAcceptingConnection)(SDK::AOnlineBeacon* Beacon);
     }
 
     namespace OnlineBeaconHost
     {
-        inline bool (*InitHost)(AOnlineBeaconHost* Beacon);
-        inline void (*NotifyControlMessage)(AOnlineBeaconHost* World, UNetConnection* Connection, uint8 MessageType, void* Bunch);
+        inline bool (*InitHost)(SDK::AOnlineBeaconHost* Beacon);
+        inline void (*NotifyControlMessage)(SDK::AOnlineBeaconHost* World, SDK::UNetConnection* Connection, uint8 MessageType, void* Bunch);
     }
 
     namespace World
     {
-        inline void (*RemoveNetworkActor)(UWorld* World, AActor* Actor);
-        inline void (*WelcomePlayer)(UWorld* World, UNetConnection* Connection);
-        inline void (*NotifyControlMessage)(UWorld* World, UNetConnection* Connection, uint8 MessageType, void* Bunch);
-        inline APlayerController* (*SpawnPlayActor)(UWorld* World, UPlayer* NewPlayer, ENetRole RemoteRole, FURL& URL, void* UniqueId, FString& Error, uint8 NetPlayerIndex);
-        inline uint8 (*NotifyAcceptingConnection)(UWorld* World);
+        inline void (*RemoveNetworkActor)(SDK::UWorld* World, SDK::AActor* Actor);
+        inline void (*WelcomePlayer)(SDK::UWorld* World, SDK::UNetConnection* Connection);
+        inline void (*NotifyControlMessage)(SDK::UWorld* World, SDK::UNetConnection* Connection, uint8 MessageType, void* Bunch);
+        inline SDK::APlayerController* (*SpawnPlayActor)(SDK::UWorld* World, SDK::UPlayer* NewPlayer, SDK::ENetRole RemoteRole, SDK::FURL& URL, void* UniqueId, SDK::FString& Error, uint8 NetPlayerIndex);
+        inline uint8 (*NotifyAcceptingConnection)(SDK::UWorld* World);
     }
 
     namespace Engine
     {
-        inline void* (*SeamlessTravelHandlerForWorld)(UEngine* Engine, UWorld* World);
+        inline void* (*SeamlessTravelHandlerForWorld)(SDK::UEngine* Engine, SDK::UWorld* World);
     }
 
     namespace GameViewportClient
     {
-        inline void (*PostRender)(UGameViewportClient* _this, UCanvas* Canvas);
+        inline void (*PostRender)(SDK::UGameViewportClient* _this, SDK::UCanvas* Canvas);
     }
 
     namespace Static
     {
-        inline UObject* (*StaticLoadObjectInternal)(UClass* a1, UObject* a2, const wchar_t* a3, const wchar_t* a4, unsigned int a5, UPackageMap* a6, bool a7);
+        inline SDK::UObject* (*StaticLoadObjectInternal)(SDK::UClass* a1, SDK::UObject* a2, const wchar_t* a3, const wchar_t* a4, unsigned int a5, SDK::UPackageMap* a6, bool a7);
     }
 
     void InitializeAll()
@@ -109,23 +109,23 @@ namespace Native
 
         uintptr_t Address = Utils::FindPattern(Patterns::GObjects, true, 3);
         CheckNullFatal(Address, "Failed to find GObjects");
-        AddressToFunction(Address, UObject::GObjects);
+        AddressToFunction(Address, SDK::UObject::GObjects);
 
         Address = Utils::FindPattern(Patterns::Free);
         CheckNullFatal(Address, "Failed to find Free");
-        AddressToFunction(Address, FMemory_Free);
+        AddressToFunction(Address, SDK::FMemory_Free);
 
         Address = Utils::FindPattern(Patterns::Realloc);
         CheckNullFatal(Address, "Failed to find Realloc");
-        AddressToFunction(Address, FMemory_Realloc);
+        AddressToFunction(Address, SDK::FMemory_Realloc);
 
         Address = Utils::FindPattern(Patterns::Malloc);
         CheckNullFatal(Address, "Failed to find Malloc");
-        AddressToFunction(Address, FMemory_Malloc);
+        AddressToFunction(Address, SDK::FMemory_Malloc);
 
         Address = Utils::FindPattern(Patterns::FNameToString);
         CheckNullFatal(Address, "Failed to find FNameToString");
-        AddressToFunction(Address, FNameToString);
+        AddressToFunction(Address, SDK::FNameToString);
 
         Address = Utils::FindPattern(Patterns::TickFlush);
         CheckNullFatal(Address, "Failed to find TickFlush");

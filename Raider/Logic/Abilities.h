@@ -4,7 +4,7 @@
 
 namespace Abilities
 {
-    FGameplayAbilitySpec* UAbilitySystemComponent_FindAbilitySpecFromHandle(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAbilitySpecHandle Handle)
+    SDK::FGameplayAbilitySpec* UAbilitySystemComponent_FindAbilitySpecFromHandle(SDK::UAbilitySystemComponent* AbilitySystemComponent, SDK::FGameplayAbilitySpecHandle Handle)
     {
         auto Specs = AbilitySystemComponent->ActivatableAbilities.Items;
 
@@ -21,7 +21,7 @@ namespace Abilities
         return nullptr;
     }
 
-    void UAbilitySystemComponent_ConsumeAllReplicatedData(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAbilitySpecHandle AbilityHandle, FPredictionKey AbilityOriginalPredictionKey)
+    void UAbilitySystemComponent_ConsumeAllReplicatedData(SDK::UAbilitySystemComponent* AbilitySystemComponent, SDK::FGameplayAbilitySpecHandle AbilityHandle, SDK::FPredictionKey AbilityOriginalPredictionKey)
     {
         /*
         FGameplayAbilitySpecHandleAndPredictionKey toFind { AbilityHandle, AbilityOriginalPredictionKey.Current };
@@ -30,7 +30,7 @@ namespace Abilities
         */
     }
 
-    auto TryActivateAbility(UAbilitySystemComponent* AbilitySystemComponent, FGameplayAbilitySpecHandle AbilityToActivate, bool InputPressed, FPredictionKey* PredictionKey, FGameplayEventData* TriggerEventData)
+    auto TryActivateAbility(SDK::UAbilitySystemComponent* AbilitySystemComponent, SDK::FGameplayAbilitySpecHandle AbilityToActivate, bool InputPressed, SDK::FPredictionKey* PredictionKey, SDK::FGameplayEventData* TriggerEventData)
     {
         auto Spec = UAbilitySystemComponent_FindAbilitySpecFromHandle(AbilitySystemComponent, AbilityToActivate);
 
@@ -43,7 +43,7 @@ namespace Abilities
 
         // UAbilitySystemComponent_ConsumeAllReplicatedData(AbilitySystemComponent, AbilityToActivate, *PredictionKey);
 
-        UGameplayAbility* InstancedAbility = nullptr;
+        SDK::UGameplayAbility* InstancedAbility = nullptr;
         Spec->InputPressed = true;
 
         if (Native::AbilitySystemComponent::InternalTryActivateAbility(AbilitySystemComponent, AbilityToActivate, *PredictionKey, &InstancedAbility, nullptr, TriggerEventData))
@@ -62,18 +62,18 @@ namespace Abilities
         Native::AbilitySystemComponent::MarkAbilitySpecDirty(AbilitySystemComponent, *Spec);
     }
 
-    void GrantGameplayAbility(APlayerPawn_Athena_C* TargetPawn, UClass* GameplayAbilityClass)
+    void GrantGameplayAbility(SDK::APlayerPawn_Athena_C* TargetPawn, SDK::UClass* GameplayAbilityClass)
     {
         auto AbilitySystemComponent = TargetPawn->AbilitySystemComponent;
 
         if (!AbilitySystemComponent)
             return;
 
-        auto GenerateNewSpec = [&]() -> FGameplayAbilitySpec
+        auto GenerateNewSpec = [&]() -> SDK::FGameplayAbilitySpec
         {
-            FGameplayAbilitySpecHandle Handle { rand() };
+            SDK::FGameplayAbilitySpecHandle Handle { rand() };
 
-            FGameplayAbilitySpec Spec { -1, -1, -1, Handle, (UGameplayAbility*)GameplayAbilityClass->CreateDefaultObject(), 1, -1, nullptr, 0, false, false, false };
+            SDK::FGameplayAbilitySpec Spec { -1, -1, -1, Handle, (SDK::UGameplayAbility*)GameplayAbilityClass->CreateDefaultObject(), 1, -1, nullptr, 0, false, false, false };
 
             return Spec;
         };
@@ -92,11 +92,11 @@ namespace Abilities
         return;
     }
 
-    inline auto ApplyAbilities(APawn* _Pawn) // TODO: Check if the player already has the ability.
+    inline auto ApplyAbilities(SDK::APawn* _Pawn) // TODO: Check if the player already has the ability.
     {
-        auto Pawn = (APlayerPawn_Athena_C*)_Pawn;
+        auto Pawn = (SDK::APlayerPawn_Athena_C*)_Pawn;
 
-        auto GAS_DefaultPlayer = UObject::FindObject<UFortAbilitySet>("FortAbilitySet GAS_DefaultPlayer.GAS_DefaultPlayer");
+        auto GAS_DefaultPlayer = SDK::UObject::FindObject<SDK::UFortAbilitySet>("FortAbilitySet GAS_DefaultPlayer.GAS_DefaultPlayer");
         for (int i = 0; i < GAS_DefaultPlayer->GameplayAbilities.Count; i++)
         {
             auto Ability = GAS_DefaultPlayer->GameplayAbilities[i];

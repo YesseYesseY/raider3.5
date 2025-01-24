@@ -4,9 +4,9 @@
 
 
 
-static FVector GetRandomBattleBusLocation()
+static SDK::FVector GetRandomBattleBusLocation()
 {
-    static std::vector<FVector> Locations = {
+    static std::vector<SDK::FVector> Locations = {
         { 24426, 37710, 17525 },    // Retail Row
         { 50018, 73844, 17525 },    // Lonely Lodge
         { 34278, 867, 9500 },       // Dusty Depot & The Factories
@@ -48,7 +48,7 @@ public:
         LOG_INFO("Initializing Late Game!");
         LOG_INFO("Trying to set SafeZone radius!");
 
-        auto GameMode = static_cast<AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
+        auto GameMode = static_cast<SDK::AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
 
         GameMode->bSafeZoneActive = true;
         GameMode->bSafeZonePaused = false;
@@ -57,8 +57,8 @@ public:
     void InitializeGameplay()
     {
 
-        auto GameState = static_cast<AFortGameStateAthena*>(GetWorld()->GameState);
-        auto GameMode = static_cast<AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
+        auto GameState = static_cast<SDK::AFortGameStateAthena*>(GetWorld()->GameState);
+        auto GameMode = static_cast<SDK::AFortGameModeAthena*>(GetWorld()->AuthorityGameMode);
         auto Aircraft = GameState->GetAircraft(0);
         // GameState->GamePhase = EAthenaGamePhase::SafeZones;
         // int SafeZoneConfigure[3] = { 1 }
@@ -81,7 +81,7 @@ public:
             GameState->SafeZonesStartTime = 5.0f;
             Aircraft->FlightInfo.FlightSpeed = 0.0f;
             Aircraft->FlightInfo.TimeTillDropStart = 0.0f;
-            Aircraft->FlightInfo.FlightStartLocation = FVector_NetQuantize100(SafeZoneCenter);
+            Aircraft->FlightInfo.FlightStartLocation = SDK::FVector_NetQuantize100(SafeZoneCenter);
 
             Aircraft->ExitLocation = SafeZoneCenter;
             GameState->OnRep_Aircraft();
@@ -111,7 +111,7 @@ public:
         }
     }
     
-    void OnPlayerJoined(AFortPlayerControllerAthena* Controller) override
+    void OnPlayerJoined(SDK::AFortPlayerControllerAthena* Controller) override
     {
         this->Teams->AddPlayerToRandomTeam(Controller);
     }

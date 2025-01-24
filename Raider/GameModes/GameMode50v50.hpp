@@ -26,7 +26,7 @@ public:
         // GameState->OnRep_Aircraft();
     }
 
-    void OnPlayerJoined(AFortPlayerControllerAthena* Controller) override
+    void OnPlayerJoined(SDK::AFortPlayerControllerAthena* Controller) override
     {
         this->Teams->AddPlayerToRandomTeam(Controller);
     }

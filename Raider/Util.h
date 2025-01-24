@@ -167,7 +167,7 @@ namespace Utils
         return std::wstring(str.begin(), str.end());
     }
 
-    static auto RotToQuat(FRotator Rotator)
+    static auto RotToQuat(SDK::FRotator Rotator)
     {
         const float DEG_TO_RAD = PI / (180.f);
         const float DIVIDE_BY_2 = DEG_TO_RAD / 2.f;
@@ -178,7 +178,7 @@ namespace Utils
         sinCos(&SY, &CY, Rotator.Yaw * DIVIDE_BY_2);
         sinCos(&SR, &CR, Rotator.Roll * DIVIDE_BY_2);
 
-        FQuat RotationQuat;
+        SDK::FQuat RotationQuat;
         RotationQuat.X = CR * SP * SY - SR * CP * CY;
         RotationQuat.Y = -CR * SP * CY - SR * CP * SY;
         RotationQuat.Z = CR * CP * SY - SR * SP * CY;
@@ -187,9 +187,9 @@ namespace Utils
         return RotationQuat;
     }
 
-    static auto VecToRot(FVector Vector)
+    static auto VecToRot(SDK::FVector Vector)
     {
-        FRotator R;
+        SDK::FRotator R;
 
         R.Yaw = std::atan2(Vector.Y, Vector.X) * (180.f / PI);
 

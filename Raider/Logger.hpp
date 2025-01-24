@@ -3,7 +3,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #define LOGGER_NAME "RaiderLogger"
-
+#if 0
 #define LOG_DEBUG(...)                                            \
     if (spdlog::get(LOGGER_NAME) != nullptr)          \
     {                                                               \
@@ -29,7 +29,12 @@
     {                                                                  \
         spdlog::get(LOGGER_NAME)->critical(std::format(__VA_ARGS__)); \
     }
-
+#endif
+#define LOG_DEBUG(...) printf((std::format(__VA_ARGS__) + '\n').c_str());
+#define LOG_INFO(...)  printf((std::format(__VA_ARGS__) + '\n').c_str());
+#define LOG_WARN(...)  printf((std::format(__VA_ARGS__) + '\n').c_str());
+#define LOG_ERROR(...) printf((std::format(__VA_ARGS__) + '\n').c_str());
+#define LOG_FATAL(...) printf((std::format(__VA_ARGS__) + '\n').c_str());
 namespace raider::utils
 {
     class Logger

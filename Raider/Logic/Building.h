@@ -3,32 +3,32 @@
 
 namespace Building
 {
-    static void FarmBuild(ABuildingActor* Build, ABuildingActor_OnDamageServer_Params* Params)
+    static void FarmBuild(SDK::ABuildingActor* Build, SDK::ABuildingActor_OnDamageServer_Params* Params)
     {
-        auto Controller = (AFortPlayerControllerAthena*)Params->InstigatedBy;
-        auto Pawn = (AFortPlayerPawnAthena*)Controller->Pawn;
+        auto Controller = (SDK::AFortPlayerControllerAthena*)Params->InstigatedBy;
+        auto Pawn = (SDK::AFortPlayerPawnAthena*)Controller->Pawn;
 
-        if (!Params->DamageCauser->IsA(AB_Melee_Impact_Generic_C::StaticClass()))
+        if (!Params->DamageCauser->IsA(SDK::AB_Melee_Impact_Generic_C::StaticClass()))
             return;
 
-        if (Build->IsA(ABuildingSMActor::StaticClass()))
+        if (Build->IsA(SDK::ABuildingSMActor::StaticClass()))
         {
-            auto BuildSM = (ABuildingSMActor*)Build;
+            auto BuildSM = (SDK::ABuildingSMActor*)Build;
             auto MatDef = Game::EFortResourceTypeToItemDef(BuildSM->ResourceType.GetValue());
             if (!MatDef)
                 return;
 
-            static UCurveTable* resrates = nullptr;
+            static SDK::UCurveTable* resrates = nullptr;
             if (resrates == nullptr)
             {
-                auto fromplaylist = Spawners::LoadObject<UCurveTable>(UCurveTable::StaticClass(), Game::Mode->BasePlaylist->ResourceRates.ObjectID.AssetPathName.ToWString(true).c_str());
+                auto fromplaylist = Spawners::LoadObject<SDK::UCurveTable>(SDK::UCurveTable::StaticClass(), Game::Mode->BasePlaylist->ResourceRates.ObjectID.AssetPathName.ToWString(true).c_str());
                 if (fromplaylist)
                     resrates = fromplaylist;
                 else
                     resrates = BuildSM->BuildingResourceAmountOverride.CurveTable;
             }
 
-            TEnumAsByte<EEvaluateCurveTableResult> EvalResult;
+            SDK::TEnumAsByte<SDK::EEvaluateCurveTableResult> EvalResult;
             float EvalOut;
             GetDataTableFunctionLibrary()->STATIC_EvaluateCurveTableRow(resrates, BuildSM->BuildingResourceAmountOverride.RowName, 0, L"Get resource rate", &EvalResult, &EvalOut);
 
@@ -40,7 +40,7 @@ namespace Building
             auto Pickup = Spawners::SummonPickup(Pawn, MatDef, MatCount, Pawn->K2_GetActorLocation());
             if (Pickup)
             {
-                Pawn->ServerHandlePickup(Pickup, 1.0f, FVector(), true);
+                Pawn->ServerHandlePickup(Pickup, 1.0f, SDK::FVector(), true);
                 Controller->ClientReportDamagedResourceBuilding(BuildSM, BuildSM->ResourceType, MatCount, BuildSM->GetHealth() <= 0, RawDamage > 50);
             }
         }

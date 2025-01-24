@@ -18,18 +18,18 @@
 
 namespace UFunctionHooks
 {
-    inline std::vector<UFunction*> toHook;
-    inline std::vector<std::function<bool(UObject*, void*)>> toCall;
+    inline std::vector<SDK::UFunction*> toHook;
+    inline std::vector<std::function<bool(SDK::UObject*, void*)>> toCall;
 
 #define DEFINE_PEHOOK(ufunctionName, func)                           \
-    toHook.push_back(UObject::FindObject<UFunction>(ufunctionName)); \
-    toCall.push_back([](UObject * Object, void* Parameters) -> bool func);
+    toHook.push_back(SDK::UObject::FindObject<SDK::UFunction>(ufunctionName)); \
+    toCall.push_back([](SDK::UObject * Object, void* Parameters) -> bool func);
 
     auto Initialize()
     {
         DEFINE_PEHOOK("Function GameplayAbilities.AbilitySystemComponent.ServerTryActivateAbility", {
-            auto AbilitySystemComponent = (UAbilitySystemComponent*)Object;
-            auto Params = (UAbilitySystemComponent_ServerTryActivateAbility_Params*)Parameters;
+            auto AbilitySystemComponent = (SDK::UAbilitySystemComponent*)Object;
+            auto Params = (SDK::UAbilitySystemComponent_ServerTryActivateAbility_Params*)Parameters;
 
             Abilities::TryActivateAbility(AbilitySystemComponent, Params->AbilityToActivate, Params->InputPressed, &Params->PredictionKey, nullptr);
 
@@ -37,8 +37,8 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function GameplayAbilities.AbilitySystemComponent.ServerTryActivateAbilityWithEventData", {
-            auto AbilitySystemComponent = (UAbilitySystemComponent*)Object;
-            auto Params = (UAbilitySystemComponent_ServerTryActivateAbilityWithEventData_Params*)Parameters;
+            auto AbilitySystemComponent = (SDK::UAbilitySystemComponent*)Object;
+            auto Params = (SDK::UAbilitySystemComponent_ServerTryActivateAbilityWithEventData_Params*)Parameters;
 
             Abilities::TryActivateAbility(AbilitySystemComponent, Params->AbilityToActivate, Params->InputPressed, &Params->PredictionKey, &Params->TriggerEventData);
 
@@ -46,8 +46,8 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function GameplayAbilities.AbilitySystemComponent.ServerAbilityRPCBatch", {
-            auto AbilitySystemComponent = (UAbilitySystemComponent*)Object;
-            auto Params = (UAbilitySystemComponent_ServerAbilityRPCBatch_Params*)Parameters;
+            auto AbilitySystemComponent = (SDK::UAbilitySystemComponent*)Object;
+            auto Params = (SDK::UAbilitySystemComponent_ServerAbilityRPCBatch_Params*)Parameters;
 
             Abilities::TryActivateAbility(AbilitySystemComponent, Params->BatchInfo.AbilitySpecHandle, Params->BatchInfo.InputPressed, &Params->BatchInfo.PredictionKey, nullptr);
 
@@ -55,20 +55,20 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawn.ServerHandlePickup", {
-            Inventory::OnPickup((AFortPlayerControllerAthena*)((APawn*)Object)->Controller, Parameters);
+            Inventory::OnPickup((SDK::AFortPlayerControllerAthena*)((SDK::APawn*)Object)->Controller, Parameters);
             return false;
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortWeapon.GameplayCue_Weapons_Activation", {
-            if (!Object->IsA(AB_RCRocket_Launcher_Athena_C::StaticClass()))
+            if (!Object->IsA(SDK::AB_RCRocket_Launcher_Athena_C::StaticClass()))
                 return false;
 
-            auto Weapon = (AFortWeapon*)Object;
-            auto PlayerPawn = (AFortPlayerPawnAthena*)Weapon->Owner;
-            auto PlayerController = (AFortPlayerControllerAthena*)PlayerPawn->Controller;
+            auto Weapon = (SDK::AFortWeapon*)Object;
+            auto PlayerPawn = (SDK::AFortPlayerPawnAthena*)Weapon->Owner;
+            auto PlayerController = (SDK::AFortPlayerControllerAthena*)PlayerPawn->Controller;
             auto Trans = PlayerPawn->GetTransform();
             Trans.Translation.Z += 1000;
-            auto RocketPawn = static_cast<AB_PrjPawn_Athena_RCRocket_C*>(Spawners::SpawnActor(AB_PrjPawn_Athena_RCRocket_C::StaticClass(), Trans, nullptr));
+            auto RocketPawn = static_cast<SDK::AB_PrjPawn_Athena_RCRocket_C*>(Spawners::SpawnActor(SDK::AB_PrjPawn_Athena_RCRocket_C::StaticClass(), Trans, nullptr));
             PlayerController->Possess(RocketPawn);
 
             // This crashes:
@@ -80,14 +80,14 @@ namespace UFunctionHooks
 
 #ifdef CHEATS
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerCheat", {
-            if (Object->IsA(AFortPlayerControllerAthena::StaticClass()))
+            if (Object->IsA(SDK::AFortPlayerControllerAthena::StaticClass()))
             {
-                auto PC = (AFortPlayerControllerAthena*)Object;
-                auto Params = (AFortPlayerController_ServerCheat_Params*)Parameters;
+                auto PC = (SDK::AFortPlayerControllerAthena*)Object;
+                auto Params = (SDK::AFortPlayerController_ServerCheat_Params*)Parameters;
 
                 if (Params && PC && !PC->IsInAircraft())
                 {
-                    auto Pawn = (APlayerPawn_Athena_C*)PC->Pawn;
+                    auto Pawn = (SDK::APlayerPawn_Athena_C*)PC->Pawn;
                     auto Message = Params->Msg.ToString();
 
                     std::vector<std::string> Arguments;
@@ -144,7 +144,7 @@ namespace UFunctionHooks
                         else if (Command == "spawnpickup")
                         {
                             LOG_INFO("Spawning pickup for {}", Arguments[1]);
-                            auto ItemDef = UObject::FindObject<UFortItemDefinition>(Arguments[1]);
+                            auto ItemDef = SDK::UObject::FindObject<SDK::UFortItemDefinition>(Arguments[1]);
                             int Count = 1;
                             if (NumArgs >= 3)
                                 Count = stoi(Arguments[2]);
@@ -153,7 +153,7 @@ namespace UFunctionHooks
                         }
 
                         else
-                            PC->ClientMessage(L"Unable to handle command!", FName(), 0);
+                            PC->ClientMessage(L"Unable to handle command!", SDK::FName(), 0);
                     }
                 }
             }
@@ -167,11 +167,11 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDeathServer", {
-            auto Actor = (ABuildingActor*)Object;
+            auto Actor = (SDK::ABuildingActor*)Object;
 
             if (Actor)
             {
-                if (Actor->IsA(ABuildingSMActor::StaticClass()))
+                if (Actor->IsA(SDK::ABuildingSMActor::StaticClass()))
                 {
                     for (int i = 0; i < ExistingBuildings.size(); i++)
                     {
@@ -194,9 +194,9 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerCreateBuildingActor", {
-            auto PC = (AFortPlayerControllerAthena*)Object;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
 
-            auto Params = (AFortPlayerController_ServerCreateBuildingActor_Params*)Parameters;
+            auto Params = (SDK::AFortPlayerController_ServerCreateBuildingActor_Params*)Parameters;
             auto CurrentBuildClass = Params->BuildingClassData.BuildingClass;
 
             if (PC && Params && CurrentBuildClass)
@@ -223,17 +223,17 @@ namespace UFunctionHooks
                 //    }
                 //}
                 
-                auto BuildingActor = (ABuildingSMActor*)Spawners::SpawnActor(CurrentBuildClass, Params->BuildLoc, Params->BuildRot, PC, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+                auto BuildingActor = (SDK::ABuildingSMActor*)Spawners::SpawnActor(CurrentBuildClass, Params->BuildLoc, Params->BuildRot, PC, SDK::ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
                 if (BuildingActor && CanBuild(BuildingActor))
                 {
-                    BuildingActor->DynamicBuildingPlacementType = EDynamicBuildingPlacementType::DestroyAnythingThatCollides;
+                    BuildingActor->DynamicBuildingPlacementType = SDK::EDynamicBuildingPlacementType::DestroyAnythingThatCollides;
                     BuildingActor->SetMirrored(Params->bMirrored);
                     // BuildingActor->PlacedByPlacementTool();
                     BuildingActor->InitializeKismetSpawnedBuildingActor(BuildingActor, PC);
-                    auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
+                    auto PlayerState = (SDK::AFortPlayerStateAthena*)PC->PlayerState;
                     BuildingActor->Team = PlayerState->TeamIndex;
 
-                    UFortResourceItemDefinition* matdef = Game::EFortResourceTypeToItemDef(BuildingActor->ResourceType);
+                    SDK::UFortResourceItemDefinition* matdef = Game::EFortResourceTypeToItemDef(BuildingActor->ResourceType);
                     
                     if (!PC->bInfiniteAmmo)
                     {
@@ -254,21 +254,21 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerBeginEditingBuildingActor", {
-            auto Params = (AFortPlayerController_ServerBeginEditingBuildingActor_Params*)Parameters;
-            auto Controller = (AFortPlayerControllerAthena*)Object;
-            auto Pawn = (APlayerPawn_Athena_C*)Controller->Pawn;
+            auto Params = (SDK::AFortPlayerController_ServerBeginEditingBuildingActor_Params*)Parameters;
+            auto Controller = (SDK::AFortPlayerControllerAthena*)Object;
+            auto Pawn = (SDK::APlayerPawn_Athena_C*)Controller->Pawn;
             bool bFound = false;
-            auto EditToolEntry = Inventory::FindItemInInventory<UFortEditToolItemDefinition>(Controller, bFound);
+            auto EditToolEntry = Inventory::FindItemInInventory<SDK::UFortEditToolItemDefinition>(Controller, bFound);
 
             if (Controller && Pawn && Params->BuildingActorToEdit && bFound)
             {
-                auto EditTool = (AFortWeap_EditingTool*)Inventory::EquipWeaponDefinition(Pawn, (UFortWeaponItemDefinition*)EditToolEntry.ItemDefinition, EditToolEntry.ItemGuid);
+                auto EditTool = (SDK::AFortWeap_EditingTool*)Inventory::EquipWeaponDefinition(Pawn, (SDK::UFortWeaponItemDefinition*)EditToolEntry.ItemDefinition, EditToolEntry.ItemGuid);
 
                 if (EditTool)
                 {
                     EditTool->EditActor = Params->BuildingActorToEdit;
                     EditTool->OnRep_EditActor();
-                    Params->BuildingActorToEdit->EditingPlayer = (AFortPlayerStateZone*)Pawn->PlayerState;
+                    Params->BuildingActorToEdit->EditingPlayer = (SDK::AFortPlayerStateZone*)Pawn->PlayerState;
                     Params->BuildingActorToEdit->OnRep_EditingPlayer();
                 }
             }
@@ -277,7 +277,7 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortDecoTool.ServerSpawnDeco", {
-            auto Tool = (AFortDecoTool*)Object;
+            auto Tool = (SDK::AFortDecoTool*)Object;
 
             Spawners::SpawnDeco(Tool, Parameters);
 
@@ -287,8 +287,8 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerEditBuildingActor", {
-            auto Params = (AFortPlayerController_ServerEditBuildingActor_Params*)Parameters;
-            auto PC = (AFortPlayerControllerAthena*)Object;
+            auto Params = (SDK::AFortPlayerController_ServerEditBuildingActor_Params*)Parameters;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
 
             if (PC && Params)
             {
@@ -306,7 +306,7 @@ namespace UFunctionHooks
 
                     int yaw = round(float((int(rotation.Yaw) + 360) % 360) / 10) * 10; // Gets the rotation ranging from 0 to 360 degrees
 
-                    if (BuildingActor->BuildingType != EFortBuildingType::Wall) // Centers building pieces if necessary
+                    if (BuildingActor->BuildingType != SDK::EFortBuildingType::Wall) // Centers building pieces if necessary
                     {
                         switch (RotationIterations)
                         {
@@ -327,13 +327,13 @@ namespace UFunctionHooks
 
                     BuildingActor->SilentDie();
 
-                    if (auto NewBuildingActor = (ABuildingSMActor*)Spawners::SpawnActor(NewBuildingClass, location, rotation, PC))
+                    if (auto NewBuildingActor = (SDK::ABuildingSMActor*)Spawners::SpawnActor(NewBuildingClass, location, rotation, PC))
                     {
                         if (!BuildingActor->bIsInitiallyBuilding)
                             NewBuildingActor->ForceBuildingHealth(NewBuildingActor->GetMaxHealth() * HealthPercent);
                         NewBuildingActor->SetMirrored(Params->bMirrored);
                         NewBuildingActor->InitializeKismetSpawnedBuildingActor(NewBuildingActor, PC);
-                        auto PlayerState = (AFortPlayerStateAthena*)PC->PlayerState;
+                        auto PlayerState = (SDK::AFortPlayerStateAthena*)PC->PlayerState;
                         NewBuildingActor->Team = PlayerState->TeamIndex;
 
                         if (!NewBuildingActor->IsStructurallySupported())
@@ -346,21 +346,21 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerControllerZone.ClientOnPawnDied", { // Spectating hasn't been majorly testing
-            auto Params = (AFortPlayerControllerZone_ClientOnPawnDied_Params*)Parameters;
+            auto Params = (SDK::AFortPlayerControllerZone_ClientOnPawnDied_Params*)Parameters;
 
-            auto DeadPC = static_cast<AFortPlayerControllerAthena*>(Object);
-            auto DeadPlayerState = static_cast<AFortPlayerStateAthena*>(DeadPC->PlayerState);
+            auto DeadPC = static_cast<SDK::AFortPlayerControllerAthena*>(Object);
+            auto DeadPlayerState = static_cast<SDK::AFortPlayerStateAthena*>(DeadPC->PlayerState);
 
-            auto GameState = reinterpret_cast<AAthena_GameState_C*>(GetWorld()->GameState);
+            auto GameState = reinterpret_cast<SDK::AAthena_GameState_C*>(GetWorld()->GameState);
             auto playerLeftBeforeKill = GameState->PlayersLeft;
             if (Params && DeadPC)
             {
-                auto GameMode = static_cast<AFortGameModeAthena*>(GameState->AuthorityGameMode);
-                auto KillerPlayerState = static_cast<AFortPlayerStateAthena*>(Params->DeathReport.KillerPlayerState);
+                auto GameMode = static_cast<SDK::AFortGameModeAthena*>(GameState->AuthorityGameMode);
+                auto KillerPlayerState = static_cast<SDK::AFortPlayerStateAthena*>(Params->DeathReport.KillerPlayerState);
 
-                Spawners::SpawnActor<ABP_VictoryDrone_C>(DeadPC->Pawn->K2_GetActorLocation())->PlaySpawnOutAnim();
+                Spawners::SpawnActor<SDK::ABP_VictoryDrone_C>(DeadPC->Pawn->K2_GetActorLocation())->PlaySpawnOutAnim();
 
-                FDeathInfo DeathData;
+                SDK::FDeathInfo DeathData;
                 DeathData.bDBNO = false;
                 DeathData.DeathLocation = DeadPC->Pawn->K2_GetActorLocation();
                 DeathData.Distance = Params->DeathReport.KillerPawn ? Params->DeathReport.KillerPawn->GetDistanceTo(DeadPC->Pawn) : 0;
@@ -373,7 +373,7 @@ namespace UFunctionHooks
 
                 if (KillerPlayerState)
                 {
-                    if (auto Controller = static_cast<AFortPlayerControllerPvP*>(Params->DeathReport.KillerPawn->Controller))
+                    if (auto Controller = static_cast<SDK::AFortPlayerControllerPvP*>(Params->DeathReport.KillerPawn->Controller))
                     {
                         Controller->ClientReceiveKillNotification(KillerPlayerState, DeadPlayerState);
                     }
@@ -411,11 +411,11 @@ namespace UFunctionHooks
                 {
                     if (GameState->PlayersLeft == 1 && bStartedBus)
                     {
-                        TArray<AFortPlayerPawn*> OutActors;
+                        SDK::TArray<SDK::AFortPlayerPawn*> OutActors;
                         GetFortKismet()->STATIC_GetAllFortPlayerPawns(GetWorld(), &OutActors);
 
                         auto Winner = OutActors[0];
-                        auto Controller = static_cast<AFortPlayerControllerAthena*>(Winner->Controller);
+                        auto Controller = static_cast<SDK::AFortPlayerControllerAthena*>(Winner->Controller);
 
                         if (!Controller->bClientNotifiedOfWin)
                         {
@@ -434,7 +434,7 @@ namespace UFunctionHooks
 
                     if (GameState->PlayersLeft > 1)
                     {
-                        TArray<AFortPlayerPawn*> OutActors;
+                        SDK::TArray<SDK::AFortPlayerPawn*> OutActors;
                         GetFortKismet()->STATIC_GetAllFortPlayerPawns(GetWorld(), &OutActors);
                         auto RandomTarget = OutActors[rand() % OutActors.Num()];
 
@@ -444,7 +444,7 @@ namespace UFunctionHooks
                             return false;
                         }
 
-                        Spectate(DeadPC->NetConnection, static_cast<AFortPlayerStateAthena*>(RandomTarget->Controller->PlayerState));
+                        Spectate(DeadPC->NetConnection, static_cast<SDK::AFortPlayerStateAthena*>(RandomTarget->Controller->PlayerState));
                         OutActors.FreeArray();
                     }
                 }
@@ -461,15 +461,15 @@ namespace UFunctionHooks
         // Randomly duplicates items, probably picking up twice
         // 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawnAthena.OnCapsuleBeginOverlap", {
-            auto Pawn = (AFortPlayerPawnAthena*)Object;
-            auto Params = (AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
-            if (Params->OtherActor->IsA(AFortPickup::StaticClass()))
+            auto Pawn = (SDK::AFortPlayerPawnAthena*)Object;
+            auto Params = (SDK::AFortPlayerPawnAthena_OnCapsuleBeginOverlap_Params*)Parameters;
+            if (Params->OtherActor->IsA(SDK::AFortPickup::StaticClass()))
             {
-                auto Pickup = (AFortPickup*)Params->OtherActor;
+                auto Pickup = (SDK::AFortPickup*)Params->OtherActor;
 
-                if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
+                if (Pickup->bWeaponsCanBeAutoPickups && Inventory::CanPickup((SDK::AFortPlayerControllerAthena*)Pawn->Controller, Pickup))
                 {
-                    Pawn->ServerHandlePickup(Pickup, 0.40f, FVector(), true);
+                    Pawn->ServerHandlePickup(Pickup, 0.40f, SDK::FVector(), true);
                 }
             }
 
@@ -477,8 +477,8 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.BuildingActor.OnDamageServer", {
-            auto Build = (ABuildingActor*)Object;
-            auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
+            auto Build = (SDK::ABuildingActor*)Object;
+            auto Params = (SDK::ABuildingActor_OnDamageServer_Params*)Parameters;
             
             Building::FarmBuild(Build, Params);
             
@@ -486,8 +486,8 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function Car_Copper.Car_Copper_C.OnDamageServer", {
-            auto Build = (ABuildingActor*)Object;
-            auto Params = (ABuildingActor_OnDamageServer_Params*)Parameters;
+            auto Build = (SDK::ABuildingActor*)Object;
+            auto Params = (SDK::ABuildingActor_OnDamageServer_Params*)Parameters;
             
             Building::FarmBuild(Build, Params);
             
@@ -495,15 +495,15 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerEndEditingBuildingActor", {
-            auto Params = (AFortPlayerController_ServerEndEditingBuildingActor_Params*)Parameters;
-            auto PC = (AFortPlayerControllerAthena*)Object;
+            auto Params = (SDK::AFortPlayerController_ServerEndEditingBuildingActor_Params*)Parameters;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
 
             if (!PC->IsInAircraft() && Params->BuildingActorToStopEditing)
             {
                 Params->BuildingActorToStopEditing->EditingPlayer = nullptr;
                 Params->BuildingActorToStopEditing->OnRep_EditingPlayer();
 
-                auto EditTool = (AFortWeap_EditingTool*)((APlayerPawn_Athena_C*)PC->Pawn)->CurrentWeapon;
+                auto EditTool = (SDK::AFortWeap_EditingTool*)((SDK::APlayerPawn_Athena_C*)PC->Pawn)->CurrentWeapon;
 
                 if (EditTool)
                 {
@@ -517,9 +517,9 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerRepairBuildingActor", {
-            auto Params = (AFortPlayerController_ServerRepairBuildingActor_Params*)Parameters;
-            auto Controller = (AFortPlayerControllerAthena*)Object;
-            auto Pawn = (APlayerPawn_Athena_C*)Controller->Pawn;
+            auto Params = (SDK::AFortPlayerController_ServerRepairBuildingActor_Params*)Parameters;
+            auto Controller = (SDK::AFortPlayerControllerAthena*)Object;
+            auto Pawn = (SDK::APlayerPawn_Athena_C*)Controller->Pawn;
 
             if (Controller && Pawn && Params->BuildingActorToRepair)
             {
@@ -540,13 +540,13 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerControllerAthena.ServerAttemptAircraftJump", {
-            auto Params = (AFortPlayerControllerAthena_ServerAttemptAircraftJump_Params*)Parameters;
-            auto PC = (AFortPlayerControllerAthena*)Object;
-            auto GameState = (AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState;
+            auto Params = (SDK::AFortPlayerControllerAthena_ServerAttemptAircraftJump_Params*)Parameters;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
+            auto GameState = (SDK::AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState;
 
             if (PC && Params && !PC->Pawn && PC->IsInAircraft())
             {
-                auto Aircraft = (AFortAthenaAircraft*)GameState->Aircrafts[0];
+                auto Aircraft = (SDK::AFortAthenaAircraft*)GameState->Aircrafts[0];
 
                 if (Aircraft)
                 {
@@ -556,13 +556,13 @@ namespace UFunctionHooks
 
                     PC->ClientSetRotation(Params->ClientRotation, false);
 
-                    ((AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState)->Aircrafts[0]->PlayEffectsForPlayerJumped(); // TODO: fix for gammodes with 2 aircrafts (50v50 v2)
-                    PC->ActivateSlot(EFortQuickBars::Primary, 0, 0, true); // Select the pickaxe
+                    ((SDK::AAthena_GameState_C*)GetWorld()->AuthorityGameMode->GameState)->Aircrafts[0]->PlayEffectsForPlayerJumped(); // TODO: fix for gammodes with 2 aircrafts (50v50 v2)
+                    PC->ActivateSlot(SDK::EFortQuickBars::Primary, 0, 0, true); // Select the pickaxe
 
                     Inventory::EmptyInventory(PC);
 
                     bool bFound = false;
-                    auto PickaxeEntry = Inventory::FindItemInInventory<UFortWeaponMeleeItemDefinition>(PC, bFound);
+                    auto PickaxeEntry = Inventory::FindItemInInventory<SDK::UFortWeaponMeleeItemDefinition>(PC, bFound);
 
                     if (bFound)
                         Inventory::EquipInventoryItem(PC, PickaxeEntry.ItemGuid);
@@ -573,10 +573,10 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerPawn.ServerReviveFromDBNO", {
-            auto Params = (AFortPlayerPawn_ServerReviveFromDBNO_Params*)Parameters;
-            auto DBNOPawn = (APlayerPawn_Athena_C*)Object;
-            auto DBNOPC = (AFortPlayerControllerAthena*)DBNOPawn->Controller;
-            auto InstigatorPC = (AFortPlayerControllerAthena*)Params->EventInstigator;
+            auto Params = (SDK::AFortPlayerPawn_ServerReviveFromDBNO_Params*)Parameters;
+            auto DBNOPawn = (SDK::APlayerPawn_Athena_C*)Object;
+            auto DBNOPC = (SDK::AFortPlayerControllerAthena*)DBNOPawn->Controller;
+            auto InstigatorPC = (SDK::AFortPlayerControllerAthena*)Params->EventInstigator;
 
             if (InstigatorPC && DBNOPawn && DBNOPC)
             {
@@ -591,15 +591,15 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerAttemptInteract", {
-            auto Params = (AFortPlayerController_ServerAttemptInteract_Params*)Parameters;
-            auto PC = (AFortPlayerControllerAthena*)Object;
+            auto Params = (SDK::AFortPlayerController_ServerAttemptInteract_Params*)Parameters;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
 
             if (Params->ReceivingActor)
             {
-                if (Params->ReceivingActor->IsA(APlayerPawn_Athena_C::StaticClass()))
+                if (Params->ReceivingActor->IsA(SDK::APlayerPawn_Athena_C::StaticClass()))
                 {
-                    auto DBNOPawn = (APlayerPawn_Athena_C*)Params->ReceivingActor;
-                    auto DBNOPC = (AFortPlayerControllerAthena*)DBNOPawn->Controller;
+                    auto DBNOPawn = (SDK::APlayerPawn_Athena_C*)Params->ReceivingActor;
+                    auto DBNOPC = (SDK::AFortPlayerControllerAthena*)DBNOPawn->Controller;
 
                     if (DBNOPawn && DBNOPC)
                     {
@@ -607,7 +607,7 @@ namespace UFunctionHooks
                     }
                 }
 
-                if (Params->ReceivingActor->IsA(AFortAthenaSupplyDrop::StaticClass()))
+                if (Params->ReceivingActor->IsA(SDK::AFortAthenaSupplyDrop::StaticClass()))
                 {
                     auto loot = Game::Mode->GetLoot("Loot_AthenaSupplyDrop");
                     auto spawnloc = Params->ReceivingActor->K2_GetActorLocation();
@@ -617,9 +617,9 @@ namespace UFunctionHooks
                     }
                 }
                 
-                if (Params->ReceivingActor->IsA(ABuildingContainer::StaticClass()))
+                if (Params->ReceivingActor->IsA(SDK::ABuildingContainer::StaticClass()))
                 {
-                    auto Container = (ABuildingContainer*)Params->ReceivingActor;
+                    auto Container = (SDK::ABuildingContainer*)Params->ReceivingActor;
 
                     Container->bAlreadySearched = true;
                     Container->OnRep_bAlreadySearched();
@@ -652,20 +652,20 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerPlayEmoteItem", {
-            if (!Object->IsA(AFortPlayerControllerAthena::StaticClass()))
+            if (!Object->IsA(SDK::AFortPlayerControllerAthena::StaticClass()))
                 return false;
 
-            auto CurrentPC = (AFortPlayerControllerAthena*)Object;
-            auto CurrentPawn = (APlayerPawn_Athena_C*)CurrentPC->Pawn;
+            auto CurrentPC = (SDK::AFortPlayerControllerAthena*)Object;
+            auto CurrentPawn = (SDK::APlayerPawn_Athena_C*)CurrentPC->Pawn;
 
-            auto EmoteParams = (AFortPlayerController_ServerPlayEmoteItem_Params*)Parameters;
-            auto AnimInstance = (UFortAnimInstance*)CurrentPawn->Mesh->GetAnimInstance();
+            auto EmoteParams = (SDK::AFortPlayerController_ServerPlayEmoteItem_Params*)Parameters;
+            auto AnimInstance = (SDK::UFortAnimInstance*)CurrentPawn->Mesh->GetAnimInstance();
 
             if (CurrentPC && !CurrentPC->IsInAircraft() && CurrentPawn && EmoteParams->EmoteAsset && AnimInstance && !AnimInstance->bIsJumping && !AnimInstance->bIsFalling)
             {
                 // ((UFortCheatManager*)CurrentPC->CheatManager)->AthenaEmote(EmoteParams->EmoteAsset->Name.ToWString().c_str());
                 // CurrentPC->ServerEmote(EmoteParams->EmoteAsset->Name);
-                if (EmoteParams->EmoteAsset->IsA(UAthenaDanceItemDefinition::StaticClass()))
+                if (EmoteParams->EmoteAsset->IsA(SDK::UAthenaDanceItemDefinition::StaticClass()))
                 {
                     if (auto Montage = EmoteParams->EmoteAsset->GetAnimationHardReference(CurrentPawn->CharacterBodyType, CurrentPawn->CharacterGender))
                     {
@@ -675,7 +675,7 @@ namespace UFunctionHooks
                         auto& LocalAnimMontageInfo = CurrentPawn->AbilitySystemComponent->LocalAnimMontageInfo;
                         auto Ability = CurrentPawn->AbilitySystemComponent->AllReplicatedInstancedAbilities[0];
 
-                        const auto Duration = AnimInstance->Montage_Play(Montage, 1.0f, EMontagePlayReturnType::Duration, 0.0f, true);
+                        const auto Duration = AnimInstance->Montage_Play(Montage, 1.0f, SDK::EMontagePlayReturnType::Duration, 0.0f, true);
 
                         if (Duration > 0.f)
                         {
@@ -727,11 +727,11 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerAttemptInventoryDrop", {
-            auto PC = (AFortPlayerControllerAthena*)Object;
+            auto PC = (SDK::AFortPlayerControllerAthena*)Object;
 
             if (PC && !PC->IsInAircraft())
             {
-                auto Params = static_cast<AFortPlayerController_ServerAttemptInventoryDrop_Params*>(Parameters);
+                auto Params = static_cast<SDK::AFortPlayerController_ServerAttemptInventoryDrop_Params*>(Parameters);
                 Inventory::OnDrop(PC, Params->ItemGuid, Params->Count);
             }
 
@@ -739,9 +739,9 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function BP_VictoryDrone.BP_VictoryDrone_C.OnSpawnOutAnimEnded", {
-            if (Object->IsA(ABP_VictoryDrone_C::StaticClass()))
+            if (Object->IsA(SDK::ABP_VictoryDrone_C::StaticClass()))
             {
-                auto Drone = (ABP_VictoryDrone_C*)Object;
+                auto Drone = (SDK::ABP_VictoryDrone_C*)Object;
 
                 if (Drone)
                 {
@@ -753,21 +753,21 @@ namespace UFunctionHooks
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerExecuteInventoryItem", {
-            Inventory::EquipInventoryItem((AFortPlayerControllerAthena*)Object, *(FGuid*)Parameters);
+            Inventory::EquipInventoryItem((SDK::AFortPlayerControllerAthena*)Object, *(SDK::FGuid*)Parameters);
 
             return false;
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerReturnToMainMenu", {
-            auto PC = (AFortPlayerController*)Object;
+            auto PC = (SDK::AFortPlayerController*)Object;
             PC->bIsDisconnecting = true;
-            PC->ClientTravel(L"Frontend", ETravelType::TRAVEL_Absolute, false, FGuid());
+            PC->ClientTravel(L"Frontend", SDK::ETravelType::TRAVEL_Absolute, false, SDK::FGuid());
 
             return false;
         })
 
         DEFINE_PEHOOK("Function FortniteGame.FortPlayerController.ServerLoadingScreenDropped", {
-            auto Pawn = (APlayerPawn_Athena_C*)((AFortPlayerController*)Object)->Pawn;
+            auto Pawn = (SDK::APlayerPawn_Athena_C*)((SDK::AFortPlayerController*)Object)->Pawn;
             if (Pawn && Pawn->AbilitySystemComponent)
             {
                 Abilities::ApplyAbilities(Pawn);
@@ -785,16 +785,16 @@ namespace UFunctionHooks
             {
                 Game::OnReadyToStartMatch();
 
-                HostBeacon = Spawners::SpawnActor<AFortOnlineBeaconHost>();
+                HostBeacon = Spawners::SpawnActor<SDK::AFortOnlineBeaconHost>();
                 HostBeacon->ListenPort = 7776;
                 auto bInitBeacon = Native::OnlineBeaconHost::InitHost(HostBeacon);
                 CheckNullFatal(bInitBeacon, "Failed to initialize the Beacon!");
 
-                HostBeacon->NetDriverName = FName(282); // REGISTER_NAME(282,GameNetDriver)
-                HostBeacon->NetDriver->NetDriverName = FName(282); // REGISTER_NAME(282,GameNetDriver)
+                HostBeacon->NetDriverName = SDK::FName(282); // REGISTER_NAME(282,GameNetDriver)
+                HostBeacon->NetDriver->NetDriverName = SDK::FName(282); // REGISTER_NAME(282,GameNetDriver)
                 HostBeacon->NetDriver->World = GetWorld();
-                FString Error;
-                auto InURL = FURL();
+                SDK::FString Error;
+                auto InURL = SDK::FURL();
                 InURL.Port = 7777;
 
                 Native::NetDriver::InitListen(HostBeacon->NetDriver, GetWorld(), InURL, true, Error);
@@ -810,15 +810,15 @@ namespace UFunctionHooks
 
                     LOG_INFO("ClassRepNodePolicies: {} - {}", key->GetName(), ClassRepNodeMappingToString(value));
 
-                    if (key == AFortInventory::StaticClass())
+                    if (key == SDK::AFortInventory::StaticClass())
                     {
-                        value = EClassRepNodeMapping::RelevantAllConnections;
+                        value = SDK::EClassRepNodeMapping::RelevantAllConnections;
                         LOG_INFO("Found ClassRepNodePolicy for AFortInventory! {}", (int)value);
                     }
 
-                    if (key == AFortQuickBars::StaticClass())
+                    if (key == SDK::AFortQuickBars::StaticClass())
                     {
-                        value = EClassRepNodeMapping::RelevantAllConnections;
+                        value = SDK::EClassRepNodeMapping::RelevantAllConnections;
                         LOG_INFO("Found ClassRepNodePolicy for AFortQuickBars! {}", (int)value);
                     }
 
@@ -850,13 +850,13 @@ namespace UFunctionHooks
 
                 for (int i = 0; i < Connections.Num(); i++)
                 {
-                    auto Controller = (AFortPlayerControllerAthena*)Connections[i]->PlayerController;
+                    auto Controller = (SDK::AFortPlayerControllerAthena*)Connections[i]->PlayerController;
 
-                    if (!Controller || !Controller->IsA(AFortPlayerControllerAthena::StaticClass()) || Controller->PlayerState->bIsSpectator)
+                    if (!Controller || !Controller->IsA(SDK::AFortPlayerControllerAthena::StaticClass()) || Controller->PlayerState->bIsSpectator)
                         continue;
 
                     if (Controller && Controller->IsInAircraft())
-                        Controller->ServerAttemptAircraftJump(FRotator());
+                        Controller->ServerAttemptAircraftJump(SDK::FRotator());
                 }
             }
 
@@ -873,7 +873,7 @@ namespace UFunctionHooks
         })
         
         DEFINE_PEHOOK("Function Engine.GameMode.Logout", {
-            auto PC = (AFortPlayerController*)Object;
+            auto PC = (SDK::AFortPlayerController*)Object;
             if (PC) PC->bIsDisconnecting = true;
             
             return false;
